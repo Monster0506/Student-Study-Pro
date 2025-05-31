@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { X, Trash2, Repeat } from 'lucide-react';
 import {
@@ -68,6 +67,8 @@ export const EventModal = ({
   });
 
   useEffect(() => {
+    if (!isOpen) return; // Don't update form when modal is closed
+    
     if (event) {
       // Editing existing event
       setFormData({
@@ -100,31 +101,24 @@ export const EventModal = ({
         reminderMinutes: preferences?.defaultReminderMinutes || 15,
       });
     }
-  }, [event, selectedDate, categories, preferences]);
+  }, [isOpen, event, selectedDate]); // Only depend on these values
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const startDateTime = new Date(`${formData.startDate}T${formData.startTime}`);
-    const endDateTime = new Date(`${formData.endDate}T${formData.endTime}`);
+    const start = new Date(`${formData.startDate}T${formData.startTime || '00:00'}`);
+    const end = new Date(`${formData.endDate}T${formData.endTime || '23:59'}`);
 
-    // Find the selected category to get the type
-    const selectedCategory = categories.find(c => c.id === formData.categoryId);
-    const eventType: EventType = selectedCategory?.name.toUpperCase() as EventType || 'PERSONAL';
-
-    const eventData = {
+    onSave({
       title: formData.title,
-      start: startDateTime,
-      end: endDateTime,
-      type: eventType,
+      start,
+      end,
+      type: 'CLASS',
       description: formData.description,
       isAllDay: formData.isAllDay,
       categoryId: formData.categoryId || undefined,
-      courseId: formData.courseId || undefined,
+      courseId: formData.courseId === 'none' ? undefined : formData.courseId || undefined,
       reminderSettings: formData.reminderMinutes > 0 ? [{ minutesBefore: formData.reminderMinutes }] : [],
-    };
-
-    onSave(eventData, recurrenceSettings.frequency !== 'none' ? recurrenceSettings : undefined);
+    }, recurrenceSettings);
   };
 
   const getRecurrenceDescription = () => {
@@ -205,7 +199,7 @@ export const EventModal = ({
                     <SelectValue placeholder="Select course" />
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-gray-900">
-                    <SelectItem value="">No course</SelectItem>
+                    <SelectItem value="none">No course</SelectItem>
                     {courses.map((course) => (
                       <SelectItem key={course.id} value={course.id}>
                         {course.name} {course.code && `(${course.code})`}

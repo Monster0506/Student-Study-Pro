@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { UserPreferences } from '@/types';
@@ -41,7 +40,12 @@ export const usePreferences = () => {
           .from('user_preferences')
           .insert({
             user_id: userData.user.id,
-            ...defaultPrefs,
+            theme: defaultPrefs.theme,
+            default_reminder_minutes: defaultPrefs.defaultReminderMinutes,
+            pomodoro_work_minutes: defaultPrefs.pomodoroWorkMinutes,
+            pomodoro_short_break_minutes: defaultPrefs.pomodoroShortBreakMinutes,
+            pomodoro_long_break_minutes: defaultPrefs.pomodoroLongBreakMinutes,
+            pomodoro_cycles_before_long_break: defaultPrefs.pomodoroCyclesBeforeLongBreak,
           })
           .select()
           .single();
@@ -50,6 +54,7 @@ export const usePreferences = () => {
         return defaultPrefs;
       }
 
+      // Transform database column names to camelCase
       return {
         theme: data.theme,
         defaultReminderMinutes: data.default_reminder_minutes,
@@ -66,17 +71,20 @@ export const usePreferences = () => {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error('User not authenticated');
 
+      // Transform camelCase to snake_case for database
+      const dbData = {
+        user_id: userData.user.id,
+        theme: prefsData.theme,
+        default_reminder_minutes: prefsData.defaultReminderMinutes,
+        pomodoro_work_minutes: prefsData.pomodoroWorkMinutes,
+        pomodoro_short_break_minutes: prefsData.pomodoroShortBreakMinutes,
+        pomodoro_long_break_minutes: prefsData.pomodoroLongBreakMinutes,
+        pomodoro_cycles_before_long_break: prefsData.pomodoroCyclesBeforeLongBreak,
+      };
+
       const { data, error } = await supabase
         .from('user_preferences')
-        .upsert({
-          user_id: userData.user.id,
-          theme: prefsData.theme,
-          default_reminder_minutes: prefsData.defaultReminderMinutes,
-          pomodoro_work_minutes: prefsData.pomodoroWorkMinutes,
-          pomodoro_short_break_minutes: prefsData.pomodoroShortBreakMinutes,
-          pomodoro_long_break_minutes: prefsData.pomodoroLongBreakMinutes,
-          pomodoro_cycles_before_long_break: prefsData.pomodoroCyclesBeforeLongBreak,
-        })
+        .upsert(dbData)
         .select()
         .single();
 

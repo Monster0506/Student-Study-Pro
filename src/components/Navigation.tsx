@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -70,7 +69,7 @@ export const Navigation = () => {
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="text-xl font-bold text-gray-900 dark:text-white">
-              Study Scheduler
+              StudentStudyPro
             </Link>
           </div>
 

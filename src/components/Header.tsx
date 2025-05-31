@@ -1,4 +1,3 @@
-
 import { Menu, Calendar as CalendarIcon, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -38,7 +37,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
           <div className="flex items-center space-x-2">
             <CalendarIcon className="h-8 w-8 text-blue-600" />
             <h1 className="text-2xl font-bold text-gray-900">
-              Schedule<span className="text-blue-600">Hub</span>
+              Student<span className="text-blue-600">StudyPro</span>
             </h1>
           </div>
         </div>

@@ -1,4 +1,65 @@
-# Welcome to your Lovable project
+# StudentStudyPro
+
+A comprehensive study management application for students, helping them organize their academic life with features like:
+- Pomodoro timer for focused study sessions
+- Task management
+- Course organization
+- Study analytics
+- Calendar integration
+
+## Project Setup
+
+To get started with the project:
+
+```sh
+# Step 1: Clone the repository
+git clone <YOUR_GIT_URL>
+
+# Step 2: Navigate to the project directory
+cd student-study-pro
+
+# Step 3: Install dependencies
+npm install
+
+# Step 4: Start the development server
+npm run dev
+```
+
+## Technologies Used
+
+This project is built with:
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
+- Supabase (Backend & Authentication)
+
+## Features
+
+- **Pomodoro Timer**: Customizable work/break intervals for effective study sessions
+- **Task Management**: Create, organize, and track academic tasks
+- **Course Organization**: Manage courses and their associated tasks
+- **Study Analytics**: Track study time and progress
+- **Calendar Integration**: Schedule study sessions and deadlines
+
+## Development
+
+The project uses modern development practices and tools:
+- TypeScript for type safety
+- React for UI components
+- Tailwind CSS for styling
+- shadcn-ui for beautiful, accessible components
+- Supabase for backend services
+
+## Deployment
+
+The application can be deployed using various platforms:
+- Vercel
+- Netlify
+- GitHub Pages
+
+For detailed deployment instructions, refer to the deployment documentation.
 
 ## Project info
 
@@ -49,20 +110,6 @@ npm run dev
 - Select the "Codespaces" tab.
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/68372641-7706-4299-85ee-5ce06c7c1c9d) and click on Share -> Publish.
 
 ## Can I connect a custom domain to my Lovable project?
 

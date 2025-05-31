@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Play, Pause, Square, SkipForward, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -255,14 +254,14 @@ export const PomodoroTimer = () => {
           <Label className="text-sm font-medium">Associate with (Optional)</Label>
           <div className="grid grid-cols-2 gap-2">
             <Select
-              value={session.courseId || ''}
-              onValueChange={(value) => setSession({ ...session, courseId: value || undefined })}
+              value={session.courseId || 'none'}
+              onValueChange={(value) => setSession({ ...session, courseId: value === 'none' ? undefined : value })}
             >
               <SelectTrigger className="text-xs">
                 <SelectValue placeholder="Course" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No course</SelectItem>
+                <SelectItem value="none">No course</SelectItem>
                 {courses.map((course) => (
                   <SelectItem key={course.id} value={course.id}>
                     {course.name}
@@ -272,14 +271,14 @@ export const PomodoroTimer = () => {
             </Select>
             
             <Select
-              value={session.taskId || ''}
-              onValueChange={(value) => setSession({ ...session, taskId: value || undefined })}
+              value={session.taskId || 'none'}
+              onValueChange={(value) => setSession({ ...session, taskId: value === 'none' ? undefined : value })}
             >
               <SelectTrigger className="text-xs">
                 <SelectValue placeholder="Task" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No task</SelectItem>
+                <SelectItem value="none">No task</SelectItem>
                 {tasks.filter(t => t.status !== 'done').map((task) => (
                   <SelectItem key={task.id} value={task.id}>
                     {task.title}

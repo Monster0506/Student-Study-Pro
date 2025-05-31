@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,6 +27,8 @@ export const Analytics = () => {
         return { start: startOfMonth(now), end: endOfMonth(now) };
       case 'lastMonth':
         return { start: startOfMonth(subMonths(now, 1)), end: endOfMonth(subMonths(now, 1)) };
+      case 'allTime':
+        return { start: new Date(0), end: now }; // From epoch to now
       default:
         return { start: startOfWeek(now), end: endOfWeek(now) };
     }
@@ -62,6 +63,7 @@ export const Analytics = () => {
             <SelectItem value="lastWeek">Last Week</SelectItem>
             <SelectItem value="thisMonth">This Month</SelectItem>
             <SelectItem value="lastMonth">Last Month</SelectItem>
+            <SelectItem value="allTime">All Time</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -71,7 +73,7 @@ export const Analytics = () => {
         <Card>
           <CardHeader>
             <CardTitle>
-              Time Distribution ({format(start, 'MMM d')} - {format(end, 'MMM d')})
+              Time Distribution {dateRange === 'allTime' ? '(All Time)' : `(${format(start, 'MMM d')} - ${format(end, 'MMM d')})`}
             </CardTitle>
             <p className="text-sm text-gray-600">
               Total: {totalHours.toFixed(1)} hours

@@ -1,4 +1,3 @@
-
 -- User-defined event categories
 CREATE TABLE IF NOT EXISTS public.event_categories (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -76,6 +75,26 @@ CREATE TABLE IF NOT EXISTS public.user_preferences (
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- Events table
+CREATE TABLE IF NOT EXISTS public.events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    description TEXT,
+    start_time TIMESTAMPTZ NOT NULL,
+    end_time TIMESTAMPTZ NOT NULL,
+    event_type TEXT NOT NULL,
+    is_all_day BOOLEAN DEFAULT FALSE,
+    category_id UUID REFERENCES public.event_categories(id) ON DELETE SET NULL,
+    course_id UUID REFERENCES public.courses(id) ON DELETE SET NULL,
+    rrule_string TEXT,
+    reminder_settings_json JSONB DEFAULT '[]'::jsonb,
+    series_id UUID,
+    recurrence_ends_on TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
 -- Update events table for new features
 ALTER TABLE public.events 
 ADD COLUMN IF NOT EXISTS category_id UUID REFERENCES public.event_categories(id) ON DELETE SET NULL,
@@ -90,6 +109,7 @@ ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.study_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.study_goals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_preferences ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.events ENABLE ROW LEVEL SECURITY;
 
 -- Event categories policies
 CREATE POLICY "Users can manage their own categories" ON public.event_categories
@@ -113,6 +133,10 @@ FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 -- User preferences policies
 CREATE POLICY "Users can manage their own preferences" ON public.user_preferences
+FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+-- Events policies
+CREATE POLICY "Users can manage their own events" ON public.events
 FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 -- Create indexes for performance
