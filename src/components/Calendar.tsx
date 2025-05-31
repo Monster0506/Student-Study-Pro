@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Event, EVENT_TYPE_COLORS } from '@/types/event';
-import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, isSameMonth } from 'date-fns';
+import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, isSameMonth, startOfMonth, endOfMonth, eachDayOfInterval, subMonths, addMonths } from 'date-fns';
 
 interface CalendarProps {
   events: Event[];
@@ -22,7 +22,7 @@ export const Calendar = ({ events, onEventClick, onDateSelect }: CalendarProps) 
     if (view === 'week') {
       setCurrentDate(subWeeks(currentDate, 1));
     } else {
-      setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+      setCurrentDate(subMonths(currentDate, 1));
     }
   };
 
@@ -30,7 +30,7 @@ export const Calendar = ({ events, onEventClick, onDateSelect }: CalendarProps) 
     if (view === 'week') {
       setCurrentDate(addWeeks(currentDate, 1));
     } else {
-      setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+      setCurrentDate(addMonths(currentDate, 1));
     }
   };
 
@@ -43,6 +43,15 @@ export const Calendar = ({ events, onEventClick, onDateSelect }: CalendarProps) 
     return Array.from({ length: 7 }, (_, i) => addDays(start, i));
   };
 
+  const getMonthDays = () => {
+    const monthStart = startOfMonth(currentDate);
+    const monthEnd = endOfMonth(currentDate);
+    const calendarStart = startOfWeek(monthStart);
+    const calendarEnd = addDays(startOfWeek(monthEnd), 41); // 6 weeks * 7 days
+    
+    return eachDayOfInterval({ start: calendarStart, end: calendarEnd }).slice(0, 42);
+  };
+
   const getEventsForDate = (date: Date) => {
     return events.filter(event => isSameDay(event.start, date));
   };
@@ -52,6 +61,7 @@ export const Calendar = ({ events, onEventClick, onDateSelect }: CalendarProps) 
   };
 
   const weekDays = getWeekDays();
+  const monthDays = getMonthDays();
   const timeSlots = Array.from({ length: 24 }, (_, i) => i);
 
   return (
@@ -60,10 +70,7 @@ export const Calendar = ({ events, onEventClick, onDateSelect }: CalendarProps) 
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <h2 className="text-2xl font-bold text-gray-900">
-            {view === 'week' 
-              ? format(currentDate, 'MMMM yyyy')
-              : format(currentDate, 'MMMM yyyy')
-            }
+            {format(currentDate, 'MMMM yyyy')}
           </h2>
           <div className="flex items-center space-x-2">
             <Button variant="outline" size="sm" onClick={navigatePrevious}>
@@ -158,8 +165,57 @@ export const Calendar = ({ events, onEventClick, onDateSelect }: CalendarProps) 
             </div>
           ) : (
             <div className="p-4">
-              <div className="text-center text-gray-500">
-                Month view coming soon...
+              {/* Month Header */}
+              <div className="grid grid-cols-7 mb-4">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                  <div key={day} className="p-2 text-center text-sm font-medium text-gray-700">
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              {/* Month Grid */}
+              <div className="grid grid-cols-7 gap-1">
+                {monthDays.map((day, index) => {
+                  const dayEvents = getEventsForDate(day);
+                  const isCurrentMonth = isSameMonth(day, currentDate);
+                  const isToday = isSameDay(day, new Date());
+
+                  return (
+                    <div
+                      key={index}
+                      className={`min-h-[120px] p-2 border border-gray-200 cursor-pointer hover:bg-blue-50 transition-colors ${
+                        !isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'
+                      } ${isToday ? 'ring-2 ring-blue-500' : ''}`}
+                      onClick={() => onDateSelect(day)}
+                    >
+                      <div className={`text-sm font-medium mb-1 ${
+                        isToday ? 'text-blue-600' : isCurrentMonth ? 'text-gray-900' : 'text-gray-400'
+                      }`}>
+                        {format(day, 'd')}
+                      </div>
+                      <div className="space-y-1">
+                        {dayEvents.slice(0, 3).map((event) => (
+                          <div
+                            key={event.id}
+                            className={`${EVENT_TYPE_COLORS[event.type]} text-white text-xs p-1 rounded truncate cursor-pointer hover:opacity-90`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEventClick(event);
+                            }}
+                          >
+                            {event.title}
+                          </div>
+                        ))}
+                        {dayEvents.length > 3 && (
+                          <div className="text-xs text-gray-500">
+                            +{dayEvents.length - 3} more
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

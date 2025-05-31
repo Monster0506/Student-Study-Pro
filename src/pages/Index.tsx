@@ -7,7 +7,9 @@ import { Sidebar } from '@/components/Sidebar';
 import { AuthProvider, useAuth } from '@/components/auth/AuthProvider';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Event, EventType } from '@/types/event';
+import { RecurrenceSettings } from '@/components/RecurrenceModal';
 import { useEvents } from '@/hooks/useEvents';
+import { addDays, addWeeks, addMonths } from 'date-fns';
 
 const AuthenticatedApp = () => {
   const { user, loading } = useAuth();
@@ -53,11 +55,67 @@ const AuthenticatedApp = () => {
     setIsModalOpen(true);
   };
 
-  const handleSaveEvent = (eventData: Omit<Event, 'id'>) => {
+  const generateRecurringEvents = (baseEvent: Omit<Event, 'id'>, recurrence: RecurrenceSettings) => {
+    const events: Omit<Event, 'id'>[] = [baseEvent];
+    let currentDate = new Date(baseEvent.start);
+    const endDate = recurrence.endDate || addMonths(currentDate, 12); // Default to 1 year if no end date
+    
+    while (currentDate < endDate) {
+      let nextDate: Date;
+      
+      switch (recurrence.frequency) {
+        case 'daily':
+          nextDate = addDays(currentDate, recurrence.interval);
+          break;
+        case 'weekly':
+          if (recurrence.daysOfWeek.length > 0) {
+            // Find next occurrence based on selected days
+            nextDate = addDays(currentDate, 1);
+            while (!recurrence.daysOfWeek.includes(nextDate.getDay())) {
+              nextDate = addDays(nextDate, 1);
+            }
+          } else {
+            nextDate = addWeeks(currentDate, recurrence.interval);
+          }
+          break;
+        case 'monthly':
+          nextDate = addMonths(currentDate, recurrence.interval);
+          break;
+        default:
+          return events;
+      }
+      
+      if (nextDate >= endDate) break;
+      
+      const duration = baseEvent.end.getTime() - baseEvent.start.getTime();
+      const newEvent = {
+        ...baseEvent,
+        start: nextDate,
+        end: new Date(nextDate.getTime() + duration),
+      };
+      
+      events.push(newEvent);
+      currentDate = nextDate;
+      
+      // Prevent infinite loops
+      if (events.length > 100) break;
+    }
+    
+    return events;
+  };
+
+  const handleSaveEvent = (eventData: Omit<Event, 'id'>, recurrence?: RecurrenceSettings) => {
     if (selectedEvent) {
       updateEvent({ ...eventData, id: selectedEvent.id });
     } else {
-      createEvent(eventData);
+      if (recurrence && recurrence.frequency !== 'none') {
+        // Create recurring events
+        const recurringEvents = generateRecurringEvents(eventData, recurrence);
+        recurringEvents.forEach(event => createEvent(event));
+      } else {
+        // Create single event
+        createEvent(eventData);
+      }
     }
     setIsModalOpen(false);
     setSelectedEvent(null);

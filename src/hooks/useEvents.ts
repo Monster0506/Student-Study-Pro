@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Event } from '@/types/event';
+import { Event, EventType } from '@/types/event';
 import { useToast } from '@/hooks/use-toast';
 
 interface DatabaseEvent {
@@ -9,19 +9,19 @@ interface DatabaseEvent {
   title: string;
   start_time: string;
   end_time: string;
-  event_type: 'CLASS' | 'STUDY' | 'PERSONAL' | 'APPOINTMENT';
+  event_type: EventType;
   description?: string;
   is_all_day?: boolean;
   series_id?: string;
   recurrence_ends_on?: string;
 }
 
-const transformDatabaseEvent = (dbEvent: DatabaseEvent): Event => ({
+const transformDatabaseEvent = (dbEvent: any): Event => ({
   id: dbEvent.id,
   title: dbEvent.title,
   start: new Date(dbEvent.start_time),
   end: new Date(dbEvent.end_time),
-  type: dbEvent.event_type,
+  type: dbEvent.event_type as EventType,
   description: dbEvent.description,
   isAllDay: dbEvent.is_all_day,
 });
@@ -49,6 +49,9 @@ export const useEvents = () => {
 
   const createEventMutation = useMutation({
     mutationFn: async (eventData: Omit<Event, 'id'>) => {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error('User not authenticated');
+
       const { data, error } = await supabase
         .from('events')
         .insert({
@@ -58,7 +61,7 @@ export const useEvents = () => {
           event_type: eventData.type,
           description: eventData.description,
           is_all_day: eventData.isAllDay,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
+          user_id: userData.user.id,
         })
         .select()
         .single();
