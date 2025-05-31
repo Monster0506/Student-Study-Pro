@@ -9,7 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      events: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          end_time: string
+          event_type: string
+          id: string
+          is_all_day: boolean | null
+          recurrence_ends_on: string | null
+          series_id: string | null
+          start_time: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          end_time: string
+          event_type: string
+          id?: string
+          is_all_day?: boolean | null
+          recurrence_ends_on?: string | null
+          series_id?: string | null
+          start_time: string
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          end_time?: string
+          event_type?: string
+          id?: string
+          is_all_day?: boolean | null
+          recurrence_ends_on?: string | null
+          series_id?: string | null
+          start_time?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

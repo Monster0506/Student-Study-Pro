@@ -3,6 +3,7 @@ import { X, Plus, BookOpen, Brain, User, Calendar as CalendarIcon } from 'lucide
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { EVENT_TYPE_COLORS, EVENT_TYPE_LABELS } from '@/types/event';
+import { useEvents } from '@/hooks/useEvents';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -11,12 +12,33 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({ isOpen, onClose, onAddEvent }: SidebarProps) => {
+  const { events } = useEvents();
+  
   const eventTypeIcons = {
     CLASS: BookOpen,
     STUDY: Brain,
     PERSONAL: User,
     APPOINTMENT: CalendarIcon
   };
+
+  // Calculate quick stats
+  const thisWeekEvents = events.filter(event => {
+    const eventDate = new Date(event.start);
+    const now = new Date();
+    const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    return eventDate >= weekStart && eventDate <= weekEnd;
+  });
+
+  const studyHours = events
+    .filter(event => event.type === 'STUDY')
+    .reduce((total, event) => {
+      const duration = (event.end.getTime() - event.start.getTime()) / (1000 * 60 * 60);
+      return total + duration;
+    }, 0);
+
+  const classCount = events.filter(event => event.type === 'CLASS').length;
 
   return (
     <>
@@ -74,15 +96,15 @@ export const Sidebar = ({ isOpen, onClose, onAddEvent }: SidebarProps) => {
               <div className="space-y-2 text-sm text-gray-600">
                 <div className="flex justify-between">
                   <span>This Week</span>
-                  <span className="font-medium">12 events</span>
+                  <span className="font-medium">{thisWeekEvents.length} events</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Study Hours</span>
-                  <span className="font-medium">8.5h</span>
+                  <span className="font-medium">{studyHours.toFixed(1)}h</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Classes</span>
-                  <span className="font-medium">6</span>
+                  <span className="font-medium">{classCount}</span>
                 </div>
               </div>
             </CardContent>

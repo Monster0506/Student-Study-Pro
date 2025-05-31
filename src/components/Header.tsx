@@ -1,5 +1,5 @@
 
-import { Menu, Calendar as CalendarIcon, User } from 'lucide-react';
+import { Menu, Calendar as CalendarIcon, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -9,12 +9,19 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 interface HeaderProps {
   onMenuClick: () => void;
 }
 
 export const Header = ({ onMenuClick }: HeaderProps) => {
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between">
@@ -38,7 +45,9 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
 
         <div className="flex items-center space-x-4">
           <div className="hidden md:block">
-            <p className="text-sm text-gray-600">Welcome back, Student!</p>
+            <p className="text-sm text-gray-600">
+              Welcome back, {user?.email?.split('@')[0]}!
+            </p>
           </div>
           
           <DropdownMenu>
@@ -60,7 +69,11 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
                 Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer text-red-600">
+              <DropdownMenuItem 
+                className="cursor-pointer text-red-600"
+                onClick={handleSignOut}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
                 Sign out
               </DropdownMenuItem>
             </DropdownMenuContent>
