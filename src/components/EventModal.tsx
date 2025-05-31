@@ -19,8 +19,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Event, EventType, EVENT_TYPE_LABELS } from '@/types/event';
+import { Event, EventType, EVENT_TYPE_LABELS } from '@/types';
 import { RecurrenceModal, RecurrenceSettings } from './RecurrenceModal';
+import { useCategories } from '@/hooks/useCategories';
+import { useCourses } from '@/hooks/useCourses';
+import { usePreferences } from '@/hooks/usePreferences';
 import { format } from 'date-fns';
 
 interface EventModalProps {
@@ -40,15 +43,21 @@ export const EventModal = ({
   onSave, 
   onDelete 
 }: EventModalProps) => {
+  const { categories } = useCategories();
+  const { courses } = useCourses();
+  const { preferences } = usePreferences();
+
   const [formData, setFormData] = useState({
     title: '',
-    type: 'CLASS' as EventType,
+    categoryId: '',
+    courseId: '',
     startDate: '',
     startTime: '',
     endDate: '',
     endTime: '',
     description: '',
     isAllDay: false,
+    reminderMinutes: preferences?.defaultReminderMinutes || 15,
   });
 
   const [isRecurrenceOpen, setIsRecurrenceOpen] = useState(false);
@@ -63,29 +72,35 @@ export const EventModal = ({
       // Editing existing event
       setFormData({
         title: event.title,
-        type: event.type,
+        categoryId: event.categoryId || '',
+        courseId: event.courseId || '',
         startDate: format(event.start, 'yyyy-MM-dd'),
         startTime: format(event.start, 'HH:mm'),
         endDate: format(event.end, 'yyyy-MM-dd'),
         endTime: format(event.end, 'HH:mm'),
         description: event.description || '',
         isAllDay: event.isAllDay || false,
+        reminderMinutes: event.reminderSettings?.[0]?.minutesBefore || preferences?.defaultReminderMinutes || 15,
       });
     } else if (selectedDate) {
       // Creating new event
       const defaultEndTime = new Date(selectedDate.getTime() + 60 * 60 * 1000); // 1 hour later
+      const defaultCategory = categories.find(c => c.name === 'Class');
+      
       setFormData({
         title: '',
-        type: 'CLASS',
+        categoryId: defaultCategory?.id || '',
+        courseId: '',
         startDate: format(selectedDate, 'yyyy-MM-dd'),
         startTime: format(selectedDate, 'HH:mm'),
         endDate: format(selectedDate, 'yyyy-MM-dd'),
         endTime: format(defaultEndTime, 'HH:mm'),
         description: '',
         isAllDay: false,
+        reminderMinutes: preferences?.defaultReminderMinutes || 15,
       });
     }
-  }, [event, selectedDate]);
+  }, [event, selectedDate, categories, preferences]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,13 +108,20 @@ export const EventModal = ({
     const startDateTime = new Date(`${formData.startDate}T${formData.startTime}`);
     const endDateTime = new Date(`${formData.endDate}T${formData.endTime}`);
 
+    // Find the selected category to get the type
+    const selectedCategory = categories.find(c => c.id === formData.categoryId);
+    const eventType: EventType = selectedCategory?.name.toUpperCase() as EventType || 'PERSONAL';
+
     const eventData = {
       title: formData.title,
       start: startDateTime,
       end: endDateTime,
-      type: formData.type,
+      type: eventType,
       description: formData.description,
       isAllDay: formData.isAllDay,
+      categoryId: formData.categoryId || undefined,
+      courseId: formData.courseId || undefined,
+      reminderSettings: formData.reminderMinutes > 0 ? [{ minutesBefore: formData.reminderMinutes }] : [],
     };
 
     onSave(eventData, recurrenceSettings.frequency !== 'none' ? recurrenceSettings : undefined);
@@ -118,7 +140,7 @@ export const EventModal = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-md bg-white">
+        <DialogContent className="sm:max-w-md bg-white dark:bg-gray-900">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               {event ? 'Edit Event' : 'Create Event'}
@@ -147,23 +169,51 @@ export const EventModal = ({
               />
             </div>
 
-            <div>
-              <Label htmlFor="type">Event Type</Label>
-              <Select
-                value={formData.type}
-                onValueChange={(value: EventType) => setFormData({ ...formData, type: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white">
-                  {Object.entries(EVENT_TYPE_LABELS).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="category">Category</Label>
+                <Select
+                  value={formData.categoryId}
+                  onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-gray-900">
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        <div className="flex items-center space-x-2">
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: category.colorHex }}
+                          />
+                          <span>{category.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="course">Course (Optional)</Label>
+                <Select
+                  value={formData.courseId}
+                  onValueChange={(value) => setFormData({ ...formData, courseId: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select course" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-gray-900">
+                    <SelectItem value="">No course</SelectItem>
+                    {courses.map((course) => (
+                      <SelectItem key={course.id} value={course.id}>
+                        {course.name} {course.code && `(${course.code})`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="flex items-center space-x-2">
@@ -223,6 +273,26 @@ export const EventModal = ({
                   required={!formData.isAllDay}
                 />
               </div>
+            </div>
+
+            <div>
+              <Label htmlFor="reminder">Reminder (minutes before)</Label>
+              <Select
+                value={formData.reminderMinutes.toString()}
+                onValueChange={(value) => setFormData({ ...formData, reminderMinutes: parseInt(value) })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">No reminder</SelectItem>
+                  <SelectItem value="5">5 minutes before</SelectItem>
+                  <SelectItem value="15">15 minutes before</SelectItem>
+                  <SelectItem value="30">30 minutes before</SelectItem>
+                  <SelectItem value="60">1 hour before</SelectItem>
+                  <SelectItem value="1440">1 day before</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {!event && (

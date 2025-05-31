@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Event, EventType } from '@/types/event';
+import { Event, EventType } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
 interface DatabaseEvent {
@@ -14,9 +14,15 @@ interface DatabaseEvent {
   is_all_day?: boolean;
   series_id?: string;
   recurrence_ends_on?: string;
+  category_id?: string;
+  course_id?: string;
+  rrule_string?: string;
+  reminder_settings_json?: any;
+  event_categories?: any;
+  courses?: any;
 }
 
-const transformDatabaseEvent = (dbEvent: any): Event => ({
+const transformDatabaseEvent = (dbEvent: DatabaseEvent): Event => ({
   id: dbEvent.id,
   title: dbEvent.title,
   start: new Date(dbEvent.start_time),
@@ -24,6 +30,10 @@ const transformDatabaseEvent = (dbEvent: any): Event => ({
   type: dbEvent.event_type as EventType,
   description: dbEvent.description,
   isAllDay: dbEvent.is_all_day,
+  categoryId: dbEvent.category_id,
+  courseId: dbEvent.course_id,
+  rruleString: dbEvent.rrule_string,
+  reminderSettings: dbEvent.reminder_settings_json || [],
 });
 
 export const useEvents = () => {
@@ -39,7 +49,11 @@ export const useEvents = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('events')
-        .select('*')
+        .select(`
+          *,
+          event_categories(name, color_hex),
+          courses(name, color_hex)
+        `)
         .order('start_time', { ascending: true });
 
       if (error) throw error;
@@ -61,6 +75,10 @@ export const useEvents = () => {
           event_type: eventData.type,
           description: eventData.description,
           is_all_day: eventData.isAllDay,
+          category_id: eventData.categoryId,
+          course_id: eventData.courseId,
+          rrule_string: eventData.rruleString,
+          reminder_settings_json: eventData.reminderSettings || [],
           user_id: userData.user.id,
         })
         .select()
@@ -96,6 +114,10 @@ export const useEvents = () => {
           event_type: eventData.type,
           description: eventData.description,
           is_all_day: eventData.isAllDay,
+          category_id: eventData.categoryId,
+          course_id: eventData.courseId,
+          rrule_string: eventData.rruleString,
+          reminder_settings_json: eventData.reminderSettings || [],
         })
         .eq('id', id)
         .select()
