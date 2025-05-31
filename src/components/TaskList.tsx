@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Plus, Filter, Calendar, Flag, CheckCircle2, Circle, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -18,6 +17,7 @@ import { useCourses } from '@/hooks/useCourses';
 import { Task, PRIORITY_COLORS, STATUS_COLORS } from '@/types';
 import { TaskModal } from './TaskModal';
 import { format } from 'date-fns';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TaskListProps {
   compact?: boolean;
@@ -26,6 +26,7 @@ interface TaskListProps {
 export const TaskList = ({ compact = false }: TaskListProps) => {
   const { tasks, updateTask, deleteTask, isLoading } = useTasks();
   const { courses } = useCourses();
+  const isMobile = useIsMobile();
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -65,7 +66,7 @@ export const TaskList = ({ compact = false }: TaskListProps) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="text-lg text-gray-600">Loading tasks...</div>
+        <div className="text-lg text-gray-600 dark:text-gray-300">Loading tasks...</div>
       </div>
     );
   }
@@ -92,7 +93,7 @@ export const TaskList = ({ compact = false }: TaskListProps) => {
                   {task.title}
                 </p>
                 {task.dueDate && (
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     Due {format(task.dueDate, 'MMM d')}
                   </p>
                 )}
@@ -103,7 +104,7 @@ export const TaskList = ({ compact = false }: TaskListProps) => {
             </div>
           ))}
           {upcomingTasks.length === 0 && (
-            <p className="text-sm text-gray-500 text-center py-4">No upcoming tasks</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No upcoming tasks</p>
           )}
         </CardContent>
       </Card>
@@ -112,9 +113,9 @@ export const TaskList = ({ compact = false }: TaskListProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Tasks</h1>
-        <Button onClick={handleAddTask} className="bg-blue-600 hover:bg-blue-700">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Tasks</h1>
+        <Button onClick={handleAddTask} className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
           Add Task
         </Button>
@@ -123,12 +124,15 @@ export const TaskList = ({ compact = false }: TaskListProps) => {
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <Input
-              placeholder="Search tasks..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="lg:col-span-2">
+              <Input
+                placeholder="Search tasks..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full"
+              />
+            </div>
             <Select value={filterStatus} onValueChange={setFilterStatus}>
               <SelectTrigger>
                 <SelectValue placeholder="Status" />
@@ -173,14 +177,14 @@ export const TaskList = ({ compact = false }: TaskListProps) => {
         {filteredTasks.map((task) => (
           <Card key={task.id} className="hover:shadow-md transition-shadow">
             <CardContent className="p-4">
-              <div className="flex items-start space-x-3">
+              <div className="flex items-start space-x-4">
                 <Checkbox
                   checked={task.status === 'done'}
                   onCheckedChange={() => handleTaskToggle(task)}
                   className="mt-1"
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <h3 className={`font-medium ${task.status === 'done' ? 'line-through text-gray-500' : ''}`}>
                       {task.title}
                     </h3>
@@ -189,6 +193,7 @@ export const TaskList = ({ compact = false }: TaskListProps) => {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEditTask(task)}
+                        className="h-8 w-8 p-0"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -196,16 +201,16 @@ export const TaskList = ({ compact = false }: TaskListProps) => {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDeleteTask(task.id)}
-                        className="text-red-600 hover:text-red-700"
+                        className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
                   {task.description && (
-                    <p className="text-sm text-gray-600 mt-1">{task.description}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{task.description}</p>
                   )}
-                  <div className="flex items-center space-x-4 mt-2">
+                  <div className="flex flex-wrap items-center gap-2 mt-2">
                     <Badge className={`text-xs ${STATUS_COLORS[task.status]}`}>
                       {task.status === 'todo' ? 'To Do' : task.status === 'inprogress' ? 'In Progress' : 'Done'}
                     </Badge>
@@ -219,7 +224,7 @@ export const TaskList = ({ compact = false }: TaskListProps) => {
                       </Badge>
                     )}
                     {task.dueDate && (
-                      <div className="flex items-center text-xs text-gray-500">
+                      <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                         <Calendar className="w-3 h-3 mr-1" />
                         Due {format(task.dueDate, 'MMM d, yyyy')}
                       </div>
@@ -233,7 +238,7 @@ export const TaskList = ({ compact = false }: TaskListProps) => {
         {filteredTasks.length === 0 && (
           <Card>
             <CardContent className="p-8 text-center">
-              <p className="text-gray-500">No tasks found matching your filters.</p>
+              <p className="text-gray-500 dark:text-gray-400">No tasks found matching your filters.</p>
             </CardContent>
           </Card>
         )}

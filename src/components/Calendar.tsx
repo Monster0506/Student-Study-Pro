@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Event } from '@/types';
 import { useCategories } from '@/hooks/useCategories';
 import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, isSameMonth, startOfMonth, endOfMonth, eachDayOfInterval, subMonths, addMonths } from 'date-fns';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CalendarProps {
   events: Event[];
@@ -19,6 +19,7 @@ export const Calendar = ({ events, onEventClick, onDateSelect }: CalendarProps) 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<ViewType>('week');
   const { categories } = useCategories();
+  const isMobile = useIsMobile();
 
   const navigatePrevious = () => {
     if (view === 'week') {
@@ -82,11 +83,11 @@ export const Calendar = ({ events, onEventClick, onDateSelect }: CalendarProps) 
   const timeSlots = Array.from({ length: 24 }, (_, i) => i);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Calendar Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center space-x-4">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
             {format(currentDate, 'MMMM yyyy')}
           </h2>
           <div className="flex items-center space-x-2">
@@ -107,6 +108,7 @@ export const Calendar = ({ events, onEventClick, onDateSelect }: CalendarProps) 
             variant={view === 'week' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setView('week')}
+            className="flex-1 sm:flex-none"
           >
             Week
           </Button>
@@ -114,12 +116,13 @@ export const Calendar = ({ events, onEventClick, onDateSelect }: CalendarProps) 
             variant={view === 'month' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setView('month')}
+            className="flex-1 sm:flex-none"
           >
             Month
           </Button>
           <Button 
             onClick={() => onDateSelect(new Date())} 
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
           >
             <Plus className="mr-2 h-4 w-4" />
             Add Event
@@ -131,17 +134,17 @@ export const Calendar = ({ events, onEventClick, onDateSelect }: CalendarProps) 
       <Card>
         <CardContent className="p-0">
           {view === 'week' ? (
-            <div className="overflow-x-auto">
-              <div className="min-w-full">
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <div className="min-w-[800px] sm:min-w-full">
                 {/* Week Header */}
                 <div className="grid grid-cols-8 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                  <div className="p-4 text-sm font-medium text-gray-700 dark:text-gray-300"></div>
+                  <div className="p-2 sm:p-4 text-sm font-medium text-gray-700 dark:text-gray-300"></div>
                   {weekDays.map((day, index) => (
-                    <div key={index} className="p-4 text-center border-l border-gray-200 dark:border-gray-700">
+                    <div key={index} className="p-2 sm:p-4 text-center border-l border-gray-200 dark:border-gray-700">
                       <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         {format(day, 'EEE')}
                       </div>
-                      <div className={`text-2xl font-bold mt-1 ${
+                      <div className={`text-lg sm:text-2xl font-bold mt-1 ${
                         isSameDay(day, new Date()) ? 'text-blue-600' : 'text-gray-900 dark:text-gray-100'
                       }`}>
                         {format(day, 'd')}
@@ -168,7 +171,7 @@ export const Calendar = ({ events, onEventClick, onDateSelect }: CalendarProps) 
                             .map((event) => (
                               <div
                                 key={event.id}
-                                className="text-white text-xs p-2 rounded mb-1 cursor-pointer hover:opacity-90 transition-opacity"
+                                className="text-white text-xs p-2 rounded mb-1 cursor-pointer hover:opacity-90 transition-opacity touch-manipulation"
                                 style={{ backgroundColor: getEventColor(event) }}
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -189,11 +192,11 @@ export const Calendar = ({ events, onEventClick, onDateSelect }: CalendarProps) 
               </div>
             </div>
           ) : (
-            <div className="p-4">
+            <div className="p-2 sm:p-4">
               {/* Month Header */}
-              <div className="grid grid-cols-7 mb-4">
+              <div className="grid grid-cols-7 mb-2 sm:mb-4">
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                  <div key={day} className="p-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <div key={day} className="p-1 sm:p-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300">
                     {day}
                   </div>
                 ))}
@@ -209,7 +212,7 @@ export const Calendar = ({ events, onEventClick, onDateSelect }: CalendarProps) 
                   return (
                     <div
                       key={index}
-                      className={`min-h-[120px] p-2 border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors ${
+                      className={`min-h-[80px] sm:min-h-[120px] p-1 sm:p-2 border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors touch-manipulation ${
                         !isCurrentMonth ? 'bg-gray-50 dark:bg-gray-800 text-gray-400' : 'bg-white dark:bg-gray-900'
                       } ${isToday ? 'ring-2 ring-blue-500' : ''}`}
                       onClick={() => onDateSelect(day)}
@@ -220,10 +223,10 @@ export const Calendar = ({ events, onEventClick, onDateSelect }: CalendarProps) 
                         {format(day, 'd')}
                       </div>
                       <div className="space-y-1">
-                        {dayEvents.slice(0, 3).map((event) => (
+                        {dayEvents.slice(0, isMobile ? 2 : 3).map((event) => (
                           <div
                             key={event.id}
-                            className="text-white text-xs p-1 rounded truncate cursor-pointer hover:opacity-90"
+                            className="text-white text-xs p-1 rounded truncate cursor-pointer hover:opacity-90 touch-manipulation"
                             style={{ backgroundColor: getEventColor(event) }}
                             onClick={(e) => {
                               e.stopPropagation();
@@ -233,9 +236,9 @@ export const Calendar = ({ events, onEventClick, onDateSelect }: CalendarProps) 
                             {event.title}
                           </div>
                         ))}
-                        {dayEvents.length > 3 && (
+                        {dayEvents.length > (isMobile ? 2 : 3) && (
                           <div className="text-xs text-gray-500 dark:text-gray-400">
-                            +{dayEvents.length - 3} more
+                            +{dayEvents.length - (isMobile ? 2 : 3)} more
                           </div>
                         )}
                       </div>

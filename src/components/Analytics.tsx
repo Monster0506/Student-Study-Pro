@@ -12,9 +12,11 @@ import { Progress } from '@/components/ui/progress';
 import { useTimeUsageAnalytics, useStudyGoalProgress } from '@/hooks/useAnalytics';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, subWeeks, subMonths, format } from 'date-fns';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const Analytics = () => {
   const [dateRange, setDateRange] = useState('thisWeek');
+  const isMobile = useIsMobile();
   
   const getDateRange = () => {
     const now = new Date();
@@ -52,11 +54,14 @@ export const Analytics = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Analytics</h1>
+      {/* Date Range Selector */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
+          Analytics
+        </h2>
         <Select value={dateRange} onValueChange={setDateRange}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue />
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Select date range" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="thisWeek">This Week</SelectItem>
@@ -68,42 +73,45 @@ export const Analytics = () => {
         </Select>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Time Usage Pie Chart */}
         <Card>
           <CardHeader>
-            <CardTitle>
+            <CardTitle className="text-base sm:text-lg">
               Time Distribution {dateRange === 'allTime' ? '(All Time)' : `(${format(start, 'MMM d')} - ${format(end, 'MMM d')})`}
             </CardTitle>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Total: {totalHours.toFixed(1)} hours
             </p>
           </CardHeader>
           <CardContent>
             {timeUsage.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={timeUsage}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ categoryName, hours, percent }) => 
-                      `${categoryName}: ${hours.toFixed(1)}h (${(percent * 100).toFixed(0)}%)`
-                    }
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="hours"
-                  >
-                    {timeUsage.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.colorHex || COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+              <div className="h-[300px] sm:h-[400px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={timeUsage}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ categoryName, hours, percent }) => 
+                        `${categoryName}: ${hours.toFixed(1)}h (${(percent * 100).toFixed(0)}%)`
+                      }
+                      outerRadius={isMobile ? 80 : 100}
+                      fill="#8884d8"
+                      dataKey="hours"
+                    >
+                      {timeUsage.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.colorHex || COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
             ) : (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                 No events found for this period
               </div>
             )}
@@ -113,21 +121,28 @@ export const Analytics = () => {
         {/* Time Usage Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle>Hours by Category</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Hours by Category</CardTitle>
           </CardHeader>
           <CardContent>
             {timeUsage.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={timeUsage}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="categoryName" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="hours" fill="#3B82F6" />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="h-[300px] sm:h-[400px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={timeUsage}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                      dataKey="categoryName" 
+                      angle={isMobile ? -45 : 0}
+                      textAnchor={isMobile ? "end" : "middle"}
+                      height={isMobile ? 60 : 30}
+                    />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="hours" fill="#3B82F6" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             ) : (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                 No events found for this period
               </div>
             )}
@@ -138,33 +153,33 @@ export const Analytics = () => {
       {/* Study Goals Progress */}
       <Card>
         <CardHeader>
-          <CardTitle>Study Goals Progress (This Week)</CardTitle>
-          <p className="text-sm text-gray-600">
-            Track your weekly study hour goals per course
-          </p>
+          <CardTitle className="text-base sm:text-lg">Study Goals Progress</CardTitle>
         </CardHeader>
         <CardContent>
-          {studyGoals.length > 0 ? (
+          {studyGoalsLoading ? (
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+              Loading goals...
+            </div>
+          ) : studyGoals.length > 0 ? (
             <div className="space-y-4">
               {studyGoals.map((goal) => (
                 <div key={goal.courseId} className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">{goal.courseName}</span>
-                    <span className="text-sm text-gray-600">
-                      {goal.actualHours}h / {goal.targetHours}h
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">{goal.courseName}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {goal.actualHours.toFixed(1)} / {goal.targetHours} hours
                     </span>
                   </div>
-                  <Progress value={goal.progress} className="h-2" />
-                  <div className="text-xs text-gray-500">
-                    {goal.progress}% complete
-                  </div>
+                  <Progress 
+                    value={goal.progress} 
+                    className="h-2"
+                  />
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
-              <p>No study goals set yet.</p>
-              <p className="text-sm mt-2">Set up study goals in Course Management to track your progress.</p>
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+              No study goals set
             </div>
           )}
         </CardContent>

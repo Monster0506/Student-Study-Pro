@@ -1,4 +1,3 @@
-
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -28,7 +27,7 @@ function App() {
             <BrowserRouter>
               <div className="min-h-screen bg-background">
                 <Navigation />
-                <main className="container mx-auto px-4 py-6">
+                <main className="container mx-auto px-4 pt-20 pb-6">
                   <Routes>
                     <Route
                       path="/"

@@ -174,6 +174,7 @@ export const EventModal = ({
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-gray-900">
+                    <SelectItem value="none">No category</SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
                         <div className="flex items-center space-x-2">

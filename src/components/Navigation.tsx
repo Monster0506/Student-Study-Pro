@@ -22,6 +22,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const navigationItems = [
   { path: '/', label: 'Calendar', icon: Calendar },
@@ -33,12 +34,13 @@ const navigationItems = [
 ];
 
 export const Navigation = () => {
-  const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const { theme, setTheme } = useTheme();
+  const isMobile = useIsMobile();
+  const [isOpen, setIsOpen] = useState(false);
 
-  const NavItems = ({ mobile = false, onItemClick = () => {} }) => (
-    <nav className={`${mobile ? 'flex flex-col space-y-2' : 'hidden md:flex md:space-x-6'}`}>
+  const NavItems = () => (
+    <nav className={`${isMobile ? 'space-y-1' : 'flex items-center space-x-1'}`}>
       {navigationItems.map((item) => {
         const Icon = item.icon;
         const isActive = location.pathname === item.path;
@@ -47,79 +49,126 @@ export const Navigation = () => {
           <Link
             key={item.path}
             to={item.path}
-            onClick={onItemClick}
-            className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
               isActive
-                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800'
+                ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+                : 'text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800'
             }`}
+            onClick={() => setIsOpen(false)}
           >
-            <Icon className="h-4 w-4" />
-            <span>{item.label}</span>
+            <Icon className="h-5 w-5 mr-3" />
+            {item.label}
           </Link>
         );
       })}
     </nav>
   );
 
-  return (
-    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <div className="flex items-center">
-            <Link to="/" className="text-xl font-bold text-gray-900 dark:text-white">
-              StudentStudyPro
-            </Link>
+  if (isMobile) {
+    return (
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <SheetTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="fixed top-4 left-4 z-50 md:hidden"
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="w-[280px] p-0">
+          <div className="flex flex-col h-full">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold">Menu</h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsOpen(false)}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              <NavItems />
+            </div>
+            <div className="p-4 border-t">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="w-full justify-start">
+                    {theme === 'dark' ? (
+                      <Moon className="h-4 w-4 mr-2" />
+                    ) : theme === 'light' ? (
+                      <Sun className="h-4 w-4 mr-2" />
+                    ) : (
+                      <Monitor className="h-4 w-4 mr-2" />
+                    )}
+                    Theme
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[200px]">
+                  <DropdownMenuItem onClick={() => setTheme('light')}>
+                    <Sun className="h-4 w-4 mr-2" />
+                    Light
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme('dark')}>
+                    <Moon className="h-4 w-4 mr-2" />
+                    Dark
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme('system')}>
+                    <Monitor className="h-4 w-4 mr-2" />
+                    System
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
 
-          {/* Desktop Navigation */}
-          <NavItems />
-
-          {/* Right side controls */}
-          <div className="flex items-center space-x-4">
-            {/* Theme Switcher */}
+  return (
+    <div className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white dark:bg-gray-900 dark:border-gray-800">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center">
+            <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mr-8">
+              Student<span className="text-blue-600">StudyPro</span>
+            </h1>
+            <NavItems />
+          </div>
+          <div className="flex items-center">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                  {theme === 'light' && <Sun className="h-4 w-4" />}
-                  {theme === 'dark' && <Moon className="h-4 w-4" />}
-                  {theme === 'system' && <Monitor className="h-4 w-4" />}
+                <Button variant="outline" className="justify-start">
+                  {theme === 'dark' ? (
+                    <Moon className="h-4 w-4 mr-2" />
+                  ) : theme === 'light' ? (
+                    <Sun className="h-4 w-4 mr-2" />
+                  ) : (
+                    <Monitor className="h-4 w-4 mr-2" />
+                  )}
+                  Theme
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="w-[200px]">
                 <DropdownMenuItem onClick={() => setTheme('light')}>
-                  <Sun className="mr-2 h-4 w-4" />
+                  <Sun className="h-4 w-4 mr-2" />
                   Light
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setTheme('dark')}>
-                  <Moon className="mr-2 h-4 w-4" />
+                  <Moon className="h-4 w-4 mr-2" />
                   Dark
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setTheme('system')}>
-                  <Monitor className="mr-2 h-4 w-4" />
+                  <Monitor className="h-4 w-4 mr-2" />
                   System
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-
-            {/* Mobile Menu */}
-            <Sheet open={isOpen} onOpenChange={setIsOpen}>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="sm" className="md:hidden">
-                  <Menu className="h-4 w-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-64">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-semibold">Menu</h2>
-                </div>
-                <NavItems mobile onItemClick={() => setIsOpen(false)} />
-              </SheetContent>
-            </Sheet>
           </div>
         </div>
       </div>
-    </header>
+    </div>
   );
 };

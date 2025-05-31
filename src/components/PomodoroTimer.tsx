@@ -57,11 +57,11 @@ export const PomodoroTimer = () => {
 
   useEffect(() => {
     if (currentType === 'work') {
-      setTimeLeft(settings.pomodoroWorkMinutes * 60);
+      setTimeLeft(Math.round(settings.pomodoroWorkMinutes * 60));
     } else if (currentType === 'shortBreak') {
-      setTimeLeft(settings.pomodoroShortBreakMinutes * 60);
+      setTimeLeft(Math.round(settings.pomodoroShortBreakMinutes * 60));
     } else {
-      setTimeLeft(settings.pomodoroLongBreakMinutes * 60);
+      setTimeLeft(Math.round(settings.pomodoroLongBreakMinutes * 60));
     }
   }, [currentType, settings]);
 
@@ -135,11 +135,11 @@ export const PomodoroTimer = () => {
   const handleReset = () => {
     setIsRunning(false);
     if (currentType === 'work') {
-      setTimeLeft(settings.pomodoroWorkMinutes * 60);
+      setTimeLeft(Math.round(settings.pomodoroWorkMinutes * 60));
     } else if (currentType === 'shortBreak') {
-      setTimeLeft(settings.pomodoroShortBreakMinutes * 60);
+      setTimeLeft(Math.round(settings.pomodoroShortBreakMinutes * 60));
     } else {
-      setTimeLeft(settings.pomodoroLongBreakMinutes * 60);
+      setTimeLeft(Math.round(settings.pomodoroLongBreakMinutes * 60));
     }
   };
 
@@ -319,12 +319,13 @@ const PomodoroSettings = ({ settings, onSave, onClose }: PomodoroSettingsProps) 
         <Input
           id="work"
           type="number"
-          min="1"
+          min="0.5"
           max="60"
+          step="0.5"
           value={formData.pomodoroWorkMinutes}
           onChange={(e) => setFormData({ 
             ...formData, 
-            pomodoroWorkMinutes: parseInt(e.target.value) || 25 
+            pomodoroWorkMinutes: parseFloat(e.target.value) || 0.5 
           })}
         />
       </div>
@@ -334,12 +335,13 @@ const PomodoroSettings = ({ settings, onSave, onClose }: PomodoroSettingsProps) 
         <Input
           id="shortBreak"
           type="number"
-          min="1"
+          min="0.5"
           max="30"
+          step="0.5"
           value={formData.pomodoroShortBreakMinutes}
           onChange={(e) => setFormData({ 
             ...formData, 
-            pomodoroShortBreakMinutes: parseInt(e.target.value) || 5 
+            pomodoroShortBreakMinutes: parseFloat(e.target.value) || 0.5 
           })}
         />
       </div>
@@ -349,12 +351,13 @@ const PomodoroSettings = ({ settings, onSave, onClose }: PomodoroSettingsProps) 
         <Input
           id="longBreak"
           type="number"
-          min="1"
+          min="0.5"
           max="60"
+          step="0.5"
           value={formData.pomodoroLongBreakMinutes}
           onChange={(e) => setFormData({ 
             ...formData, 
-            pomodoroLongBreakMinutes: parseInt(e.target.value) || 15 
+            pomodoroLongBreakMinutes: parseFloat(e.target.value) || 0.5 
           })}
         />
       </div>

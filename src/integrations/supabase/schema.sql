@@ -67,13 +67,19 @@ CREATE TABLE IF NOT EXISTS public.user_preferences (
     user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     theme TEXT DEFAULT 'system' CHECK (theme IN ('light', 'dark', 'system')),
     default_reminder_minutes INTEGER DEFAULT 15,
-    pomodoro_work_minutes INTEGER DEFAULT 25,
-    pomodoro_short_break_minutes INTEGER DEFAULT 5,
-    pomodoro_long_break_minutes INTEGER DEFAULT 15,
+    pomodoro_work_minutes NUMERIC(4,1) DEFAULT 25.0,
+    pomodoro_short_break_minutes NUMERIC(4,1) DEFAULT 5.0,
+    pomodoro_long_break_minutes NUMERIC(4,1) DEFAULT 15.0,
     pomodoro_cycles_before_long_break INTEGER DEFAULT 4,
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Update existing columns to NUMERIC
+ALTER TABLE public.user_preferences 
+    ALTER COLUMN pomodoro_work_minutes TYPE NUMERIC(4,1) USING pomodoro_work_minutes::NUMERIC(4,1),
+    ALTER COLUMN pomodoro_short_break_minutes TYPE NUMERIC(4,1) USING pomodoro_short_break_minutes::NUMERIC(4,1),
+    ALTER COLUMN pomodoro_long_break_minutes TYPE NUMERIC(4,1) USING pomodoro_long_break_minutes::NUMERIC(4,1);
 
 -- Events table
 CREATE TABLE IF NOT EXISTS public.events (
