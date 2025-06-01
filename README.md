@@ -1,120 +1,135 @@
 # StudentStudyPro
 
-A comprehensive study management application for students, helping them organize their academic life with features like:
-- Pomodoro timer for focused study sessions
-- Task management
-- Course organization
-- Study analytics
-- Calendar integration
+StudentStudyPro is a comprehensive productivity and study management app for students. It helps you organize your academic life with a modern, mobile-friendly interface and powerful features for time management, analytics, and planning.
 
-## Project Setup
-
-To get started with the project:
-
-```sh
-# Step 1: Clone the repository
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory
-cd student-study-pro
-
-# Step 3: Install dependencies
-npm install
-
-# Step 4: Start the development server
-npm run dev
-```
-
-## Technologies Used
-
-This project is built with:
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-- Supabase (Backend & Authentication)
+---
 
 ## Features
 
-- **Pomodoro Timer**: Customizable work/break intervals for effective study sessions
-- **Task Management**: Create, organize, and track academic tasks
-- **Course Organization**: Manage courses and their associated tasks
-- **Study Analytics**: Track study time and progress
-- **Calendar Integration**: Schedule study sessions and deadlines
+### Calendar & Scheduling
+- Full-featured calendar with day, week, and month views
+- Drag-and-drop and resize for events (except tasks)
+- Advanced recurrence rules (daily, weekly, monthly, nth/last weekday, end after N or by date)
+- Visual event indicators for both course and category colors
+- Tasks appear as events on the calendar, with status and priority indicators
 
-## Development
+### Task Management
+- Create, edit, and delete tasks with rich details
+- Multiple statuses: not done, pending, done, on hold, cancelled, urgent, ambiguous
+- Status badge and icon for each task, with quick status cycling
+- Filter and search tasks by status, priority, course, and text
+- Progress bars and summary counts for each status
+- Visual distinction for overdue and urgent tasks
 
-The project uses modern development practices and tools:
-- TypeScript for type safety
-- React for UI components
-- Tailwind CSS for styling
-- shadcn-ui for beautiful, accessible components
-- Supabase for backend services
+### Course & Category Management
+- Organize courses with custom colors, codes, and instructors
+- Assign tasks and events to courses and categories
+- Category and course color indicators on calendar events
 
-## Deployment
+### Pomodoro Timer
+- Customizable Pomodoro timer with decimal durations
+- Track Pomodoro sessions and link them to tasks or courses
 
-The application can be deployed using various platforms:
-- Vercel
-- Netlify
-- GitHub Pages
+### Analytics & Study Goals
+- Time usage analytics: Pie and bar charts of study time by category
+- Study goals: Set weekly hour targets per course and track progress
+- Analytics reflect the selected time filter (week, month, all time, etc.)
+- Quick stats in the sidebar for study hours, classes, and events
 
-For detailed deployment instructions, refer to the deployment documentation.
+### Theming & UX
+- Dark mode and light mode, auto-detected or user-selected
+- Responsive, mobile-friendly design for all features
+- Accessible UI with keyboard navigation and screen reader support
+- Tooltips and popovers for clarity, rendered in a portal for perfect stacking
 
-## Project info
+### (Optional/Future) Email Notifications
+- (Planned) Email reminders for upcoming tasks and events
 
-**URL**: https://lovable.dev/projects/68372641-7706-4299-85ee-5ce06c7c1c9d
+---
 
-## How can I edit this code?
+## Getting Started
 
-There are several ways of editing your application.
+### Prerequisites
+- Node.js (v18+ recommended)
+- npm
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/68372641-7706-4299-85ee-5ce06c7c1c9d) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+### Setup
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# 1. Clone the repository
+git clone https://github.com/Monster0506/Student-Study-Pro
+cd student-study-pro
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# 2. Install dependencies
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 3. Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The app will be available at http://localhost:5173 (or as shown in your terminal).
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+## Project Structure
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- `src/pages/` — Main app pages (Calendar, Tasks, Analytics, Courses, Settings, Timer)
+- `src/components/` — UI components (Calendar, TaskList, Modals, Navigation, PomodoroTimer, etc.)
+- `src/hooks/` — Custom React hooks (data fetching, analytics, etc.)
+- `src/integrations/` — Supabase and other backend integrations
+- `src/types/` — TypeScript types and interfaces
+- `supabase/` — Database schema and SQL migrations
 
-## Can I connect a custom domain to my Lovable project?
+---
 
-Yes, you can!
+## Technologies
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- React + TypeScript
+- Vite (build tool)
+- Tailwind CSS (utility-first styling)
+- shadcn/ui (accessible, beautiful UI components)
+- Supabase (Postgres DB, Auth, Realtime)
+- Radix UI (for popovers, tooltips, dialogs)
+- Recharts (analytics charts)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+---
+
+## Deployment
+
+You can deploy StudentStudyPro to:
+- Vercel
+- Netlify
+- GitHub Pages
+- Or any platform that supports Node.js and static hosting
+
+---
+
+## Development & Contribution
+
+- Use your favorite IDE or GitHub Codespaces.
+- All code is TypeScript and follows modern best practices.
+- PRs and issues are welcome!
+
+---
+
+## Further Reading
+
+- Supabase Docs: https://supabase.com/docs
+- shadcn/ui Docs: https://ui.shadcn.com/
+- Tailwind CSS Docs: https://tailwindcss.com/
+- Radix UI Docs: https://www.radix-ui.com/docs/primitives/overview/introduction
+
+---
+
+## Tips
+
+- Quick Add: Use the "+" button on the calendar or task list to quickly add new items.
+- Drag & Drop: Move and resize events directly on the calendar (except tasks).
+- Status Cycling: Click the status icon on a task to quickly cycle through common statuses.
+- Analytics: Use the date filter at the top of the Analytics page to see your progress for any period.
+
+---
+
+## Support
+
+For questions, feature requests, or bug reports, please open an issue or contact the maintainer.
