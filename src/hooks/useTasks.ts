@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Task } from '@/types';
@@ -84,21 +83,26 @@ export const useTasks = () => {
 
   const updateTaskMutation = useMutation({
     mutationFn: async ({ id, course, ...taskData }: Task) => {
+      const updateObj: any = {
+        title: taskData.title,
+        description: taskData.description,
+        due_date: taskData.dueDate?.toISOString(),
+        priority: taskData.priority,
+        status: taskData.status,
+        course_id: taskData.courseId === undefined ? null : taskData.courseId,
+      };
+      
       const { data, error } = await supabase
         .from('tasks')
-        .update({
-          title: taskData.title,
-          description: taskData.description,
-          due_date: taskData.dueDate?.toISOString(),
-          priority: taskData.priority,
-          status: taskData.status,
-          course_id: taskData.courseId,
-        })
+        .update(updateObj)
         .eq('id', id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
+      
       return data;
     },
     onSuccess: () => {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -29,8 +29,19 @@ interface TaskModalProps {
   task?: Task | null;
 }
 
+const STATUS_CONFIG = {
+  notdone: { label: 'Not Done' },
+  pending: { label: 'Pending' },
+  done: { label: 'Done' },
+  onhold: { label: 'On Hold' },
+  cancelled: { label: 'Cancelled' },
+  urgent: { label: 'Urgent' },
+  ambiguous: { label: 'Ambiguous' },
+};
+const ALL_STATUSES = Object.keys(STATUS_CONFIG) as (keyof typeof STATUS_CONFIG)[];
+
 export const TaskModal = ({ isOpen, onClose, task }: TaskModalProps) => {
-  const { createTask, updateTask } = useTasks();
+  const { createTask, updateTask, deleteTask } = useTasks();
   const { courses } = useCourses();
   const isMobile = useIsMobile();
 
@@ -40,7 +51,7 @@ export const TaskModal = ({ isOpen, onClose, task }: TaskModalProps) => {
     dueDate: string;
     dueTime: string;
     priority: 'low' | 'medium' | 'high';
-    status: 'todo' | 'inprogress' | 'done';
+    status: keyof typeof STATUS_CONFIG;
     courseId: string;
   }>({
     title: '',
@@ -48,7 +59,7 @@ export const TaskModal = ({ isOpen, onClose, task }: TaskModalProps) => {
     dueDate: '',
     dueTime: '',
     priority: 'medium',
-    status: 'todo',
+    status: 'notdone',
     courseId: '',
   });
 
@@ -70,7 +81,7 @@ export const TaskModal = ({ isOpen, onClose, task }: TaskModalProps) => {
         dueDate: '',
         dueTime: '',
         priority: 'medium',
-        status: 'todo',
+        status: 'notdone',
         courseId: 'none',
       });
     }
@@ -90,11 +101,16 @@ export const TaskModal = ({ isOpen, onClose, task }: TaskModalProps) => {
       dueDate,
       priority: formData.priority,
       status: formData.status,
-      courseId: formData.courseId === 'none' ? undefined : formData.courseId,
+      courseId: formData.courseId === 'none' ? undefined : formData.courseId || undefined,
     };
 
     if (task) {
-      updateTask({ ...taskData, id: task.id, course: task.course });
+      const updateData = { 
+        ...taskData, 
+        id: task.id,
+        course: task.courseId === formData.courseId ? task.course : undefined 
+      };
+      updateTask(updateData);
     } else {
       createTask(taskData);
     }
@@ -106,8 +122,19 @@ export const TaskModal = ({ isOpen, onClose, task }: TaskModalProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md bg-white dark:bg-gray-900">
         <DialogHeader>
-          <DialogTitle className="text-lg sm:text-xl">
+          <DialogTitle className="flex items-center justify-between">
             {task ? 'Edit Task' : 'Create Task'}
+            {task && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { deleteTask(task.id); onClose(); }}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                aria-label="Delete Task"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
           </DialogTitle>
         </DialogHeader>
 
@@ -160,17 +187,15 @@ export const TaskModal = ({ isOpen, onClose, task }: TaskModalProps) => {
               <Label htmlFor="status">Status</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value: 'todo' | 'inprogress' | 'done') => 
-                  setFormData({ ...formData, status: value })
-                }
+                onValueChange={(value) => setFormData({ ...formData, status: value as keyof typeof STATUS_CONFIG })}
               >
                 <SelectTrigger className="mt-1">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="todo">To Do</SelectItem>
-                  <SelectItem value="inprogress">In Progress</SelectItem>
-                  <SelectItem value="done">Done</SelectItem>
+                  {ALL_STATUSES.map((status) => (
+                    <SelectItem key={status} value={status}>{STATUS_CONFIG[status].label}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

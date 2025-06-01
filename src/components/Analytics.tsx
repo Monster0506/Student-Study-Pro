@@ -38,7 +38,7 @@ export const Analytics = () => {
 
   const { start, end } = getDateRange();
   const { data: timeUsage = [], isLoading: timeUsageLoading } = useTimeUsageAnalytics(start, end);
-  const { data: studyGoals = [], isLoading: studyGoalsLoading } = useStudyGoalProgress();
+  const { data: studyGoals = [], isLoading: studyGoalsLoading } = useStudyGoalProgress(start, end);
 
   const totalHours = timeUsage.reduce((sum, item) => sum + item.hours, 0);
 

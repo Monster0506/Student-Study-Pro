@@ -99,3 +99,72 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* === FullCalendar Custom Overrides for Tailwind/Dark Mode === */
+.fc {
+  background: transparent;
+}
+.fc .fc-toolbar-title {
+  color: theme('colors.gray.900');
+  font-weight: 700;
+}
+.dark .fc .fc-toolbar-title {
+  color: theme('colors.gray.100');
+}
+.fc .fc-daygrid-day, .fc .fc-timegrid-slot {
+  background: transparent;
+  border-color: theme('colors.gray.700');
+}
+.dark .fc .fc-daygrid-day, .dark .fc .fc-timegrid-slot {
+  background: transparent;
+  border-color: theme('colors.gray.800');
+}
+.fc .fc-daygrid-day.fc-day-today, .fc .fc-timegrid-col.fc-day-today {
+  background: theme('colors.blue.50');
+}
+.dark .fc .fc-daygrid-day.fc-day-today, .dark .fc .fc-timegrid-col.fc-day-today {
+  background: theme('colors.blue.900');
+}
+.fc .fc-event {
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04);
+  border: none;
+  padding: 2px 6px;
+}
+.fc .fc-event-title {
+  font-size: 0.95em;
+  font-weight: 500;
+}
+.fc .fc-timegrid-slot-label, .fc .fc-daygrid-day-number {
+  color: theme('colors.gray.700');
+}
+.dark .fc .fc-timegrid-slot-label, .dark .fc .fc-daygrid-day-number {
+  color: theme('colors.gray.300');
+}
+.fc .fc-scrollgrid-section-header, .fc .fc-col-header-cell {
+  background: theme('colors.gray.100');
+  color: theme('colors.gray.900');
+}
+.dark .fc .fc-scrollgrid-section-header, .dark .fc .fc-col-header-cell {
+  background: theme('colors.gray.900');
+  color: theme('colors.gray.100');
+}
+.fc .fc-daygrid-day.fc-day-other, .fc .fc-timegrid-col.fc-day-other {
+  background: theme('colors.gray.50');
+}
+.dark .fc .fc-daygrid-day.fc-day-other, .dark .fc .fc-timegrid-col.fc-day-other {
+  background: theme('colors.gray.800');
+}
+.fc .fc-timegrid-axis-cushion, .fc .fc-timegrid-slot-label-cushion {
+  padding: 0.25rem 0.5rem;
+}
+.fc .fc-daygrid-day-number {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+}
+.fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+  background: theme('colors.blue.100');
+}
+.dark .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+  background: theme('colors.blue.800');
+}

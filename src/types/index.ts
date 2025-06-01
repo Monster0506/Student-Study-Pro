@@ -1,4 +1,3 @@
-
 export type EventType = 'CLASS' | 'STUDY' | 'PERSONAL' | 'APPOINTMENT';
 
 export interface Event {
@@ -36,7 +35,7 @@ export interface Task {
   description?: string;
   dueDate?: Date;
   priority: 'low' | 'medium' | 'high';
-  status: 'todo' | 'inprogress' | 'done';
+  status: 'notdone' | 'pending' | 'done' | 'onhold' | 'cancelled' | 'urgent' | 'ambiguous';
   courseId?: string;
   course?: Course;
 }
@@ -79,6 +78,11 @@ export interface RecurrenceSettings {
   daysOfWeek: number[];
   endDate?: Date;
   occurrences?: number;
+  // Advanced monthly recurrence
+  monthlyType?: 'dayOfMonth' | 'nthWeekday' | 'lastWeekday';
+  nthWeek?: number; // 1=first, 2=second, ... -1=last
+  weekday?: number; // 0=Sunday, 1=Monday, ...
+  endAfterOccurrences?: number;
 }
 
 export interface TimeUsageData {

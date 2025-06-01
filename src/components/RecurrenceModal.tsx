@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup } from '@radix-ui/react-radio-group';
 
 interface RecurrenceModalProps {
   isOpen: boolean;
@@ -30,7 +31,20 @@ export interface RecurrenceSettings {
   daysOfWeek: number[];
   endDate?: Date;
   occurrences?: number;
+  monthlyType?: 'dayOfMonth' | 'nthWeekday' | 'lastWeekday';
+  nthWeek?: number;
+  weekday?: number;
+  endAfterOccurrences?: number;
 }
+
+const weekOptions = [
+  { value: 1, label: 'First' },
+  { value: 2, label: 'Second' },
+  { value: 3, label: 'Third' },
+  { value: 4, label: 'Fourth' },
+  { value: -1, label: 'Last' },
+];
+const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 export const RecurrenceModal = ({ 
   isOpen, 
@@ -45,9 +59,16 @@ export const RecurrenceModal = ({
       daysOfWeek: [],
     }
   );
+  const [endType, setEndType] = useState<'date' | 'occurrences'>(settings.endAfterOccurrences ? 'occurrences' : 'date');
 
   const handleSave = () => {
-    onSave(settings);
+    const newSettings = { ...settings };
+    if (endType === 'date') {
+      newSettings.endAfterOccurrences = undefined;
+    } else {
+      newSettings.endDate = undefined;
+    }
+    onSave(newSettings);
     onClose();
   };
 
@@ -60,11 +81,9 @@ export const RecurrenceModal = ({
     }));
   };
 
-  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-white">
+      <DialogContent className="sm:max-w-md bg-white dark:bg-gray-900 dark:text-gray-100">
         <DialogHeader>
           <DialogTitle>Recurring Event Settings</DialogTitle>
         </DialogHeader>
@@ -78,10 +97,10 @@ export const RecurrenceModal = ({
                 setSettings({ ...settings, frequency: value })
               }
             >
-              <SelectTrigger>
+              <SelectTrigger className="dark:bg-gray-800 dark:text-gray-100">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-white">
+              <SelectContent className="bg-white dark:bg-gray-800 dark:text-gray-100">
                 <SelectItem value="none">Does not repeat</SelectItem>
                 <SelectItem value="daily">Daily</SelectItem>
                 <SelectItem value="weekly">Weekly</SelectItem>
@@ -104,9 +123,9 @@ export const RecurrenceModal = ({
                       ...settings, 
                       interval: parseInt(e.target.value) || 1 
                     })}
-                    className="w-20"
+                    className="w-20 dark:bg-gray-800 dark:text-gray-100"
                   />
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 dark:text-gray-300">
                     {settings.frequency === 'daily' ? 'day(s)' : 
                      settings.frequency === 'weekly' ? 'week(s)' : 'month(s)'}
                   </span>
@@ -123,8 +142,9 @@ export const RecurrenceModal = ({
                           id={`day-${index}`}
                           checked={settings.daysOfWeek.includes(index)}
                           onCheckedChange={() => toggleDayOfWeek(index)}
+                          className="dark:bg-gray-800 dark:border-gray-600"
                         />
-                        <Label htmlFor={`day-${index}`} className="text-sm">
+                        <Label htmlFor={`day-${index}`} className="text-sm dark:text-gray-100">
                           {day}
                         </Label>
                       </div>
@@ -134,18 +154,121 @@ export const RecurrenceModal = ({
               )}
 
               <div>
-                <Label htmlFor="endDate">End date (optional)</Label>
-                <Input
-                  id="endDate"
-                  type="date"
-                  value={settings.endDate ? settings.endDate.toISOString().split('T')[0] : ''}
-                  onChange={(e) => setSettings({ 
-                    ...settings, 
-                    endDate: e.target.value ? new Date(e.target.value) : undefined 
-                  })}
-                />
+                <Label>End</Label>
+                <RadioGroup
+                  className="flex space-x-4 mt-2"
+                  value={endType}
+                  onValueChange={v => setEndType(v as 'date' | 'occurrences')}
+                >
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      value="date"
+                      checked={endType === 'date'}
+                      onChange={() => setEndType('date')}
+                      className="accent-blue-600"
+                    />
+                    <span>By date</span>
+                  </label>
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      value="occurrences"
+                      checked={endType === 'occurrences'}
+                      onChange={() => setEndType('occurrences')}
+                      className="accent-blue-600"
+                    />
+                    <span>After N occurrences</span>
+                  </label>
+                </RadioGroup>
+                {endType === 'date' && (
+                  <div className="mt-2">
+                    <Label htmlFor="endDate">End date</Label>
+                    <Input
+                      id="endDate"
+                      type="date"
+                      value={settings.endDate ? settings.endDate.toISOString().split('T')[0] : ''}
+                      onChange={e => setSettings({ ...settings, endDate: e.target.value ? new Date(e.target.value) : undefined })}
+                      className="dark:bg-gray-800 dark:text-gray-100"
+                    />
+                  </div>
+                )}
+                {endType === 'occurrences' && (
+                  <div className="mt-2">
+                    <Label htmlFor="endAfterOccurrences">End after N occurrences</Label>
+                    <Input
+                      id="endAfterOccurrences"
+                      type="number"
+                      min="1"
+                      value={settings.endAfterOccurrences || ''}
+                      onChange={e => setSettings({ ...settings, endAfterOccurrences: e.target.value ? parseInt(e.target.value) : undefined })}
+                      className="w-24 dark:bg-gray-800 dark:text-gray-100"
+                    />
+                  </div>
+                )}
               </div>
             </>
+          )}
+
+          {settings.frequency === 'monthly' && (
+            <div className="space-y-2">
+              <Label>Monthly pattern</Label>
+              <Select
+                value={settings.monthlyType || 'dayOfMonth'}
+                onValueChange={(value) => setSettings({ ...settings, monthlyType: value as any })}
+              >
+                <SelectTrigger className="dark:bg-gray-800 dark:text-gray-100">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-white dark:bg-gray-800 dark:text-gray-100">
+                  <SelectItem value="dayOfMonth">On day of the month</SelectItem>
+                  <SelectItem value="nthWeekday">On the Nth weekday (e.g., 2nd Tuesday)</SelectItem>
+                  <SelectItem value="lastWeekday">On the last weekday (e.g., last Friday)</SelectItem>
+                </SelectContent>
+              </Select>
+              {settings.monthlyType === 'nthWeekday' && (
+                <div className="flex space-x-2">
+                  <Select
+                    value={settings.nthWeek?.toString() || '1'}
+                    onValueChange={v => setSettings({ ...settings, nthWeek: parseInt(v) })}
+                  >
+                    <SelectTrigger className="dark:bg-gray-800 dark:text-gray-100"><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-white dark:bg-gray-800 dark:text-gray-100">
+                      {weekOptions.filter(w => w.value !== -1).map(opt => (
+                        <SelectItem key={opt.value} value={opt.value.toString()}>{opt.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={settings.weekday?.toString() || '1'}
+                    onValueChange={v => setSettings({ ...settings, weekday: parseInt(v) })}
+                  >
+                    <SelectTrigger className="dark:bg-gray-800 dark:text-gray-100"><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-white dark:bg-gray-800 dark:text-gray-100">
+                      {dayNames.map((d, i) => (
+                        <SelectItem key={i} value={i.toString()}>{d}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              {settings.monthlyType === 'lastWeekday' && (
+                <div className="flex space-x-2">
+                  <span>Last</span>
+                  <Select
+                    value={settings.weekday?.toString() || '1'}
+                    onValueChange={v => setSettings({ ...settings, weekday: parseInt(v), nthWeek: -1 })}
+                  >
+                    <SelectTrigger className="dark:bg-gray-800 dark:text-gray-100"><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-white dark:bg-gray-800 dark:text-gray-100">
+                      {dayNames.map((d, i) => (
+                        <SelectItem key={i} value={i.toString()}>{d}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
           )}
 
           <div className="flex space-x-3 pt-4">

@@ -30,11 +30,15 @@ CREATE TABLE IF NOT EXISTS public.tasks (
     description TEXT,
     due_date TIMESTAMPTZ,
     priority TEXT DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high')),
-    status TEXT DEFAULT 'todo' CHECK (status IN ('todo', 'inprogress', 'done')),
+    status TEXT DEFAULT 'notdone' CHECK (status IN ('notdone', 'done', 'pending', 'onhold', 'cancelled', 'urgent', 'ambiguous')),
     course_id UUID REFERENCES public.courses(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Update status constraint for existing table
+ALTER TABLE public.tasks DROP CONSTRAINT IF EXISTS tasks_status_check;
+ALTER TABLE public.tasks ADD CONSTRAINT tasks_status_check CHECK (status IN ('notdone', 'done', 'pending', 'onhold', 'cancelled', 'urgent', 'ambiguous'));
 
 -- Study sessions (for Pomodoro tracking)
 CREATE TABLE IF NOT EXISTS public.study_sessions (

@@ -1,69 +1,57 @@
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { ChevronLeft, ChevronRight, Plus, CheckCircle2, PauseCircle, Circle, Clock, Ban, Flame, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Event } from '@/types';
 import { useCategories } from '@/hooks/useCategories';
-import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, isSameMonth, startOfMonth, endOfMonth, eachDayOfInterval, subMonths, addMonths } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
+import FullCalendar from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction';
+import { format } from 'date-fns';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { useCourses } from '@/hooks/useCourses';
 
 interface CalendarProps {
   events: Event[];
   onEventClick: (event: Event) => void;
   onDateSelect: (date: Date) => void;
+  onEventDrop?: (event: Event, newStart: Date, newEnd: Date) => void;
+  onEventResize?: (event: Event, newStart: Date, newEnd: Date) => void;
 }
 
-type ViewType = 'week' | 'month';
+type ViewType = 'timeGridWeek' | 'dayGridMonth';
 
-export const Calendar = ({ events, onEventClick, onDateSelect }: CalendarProps) => {
+// Status config for tasks
+const STATUS_CONFIG = {
+  notdone: { label: 'Not Done', color: '#9CA3AF', icon: Circle },
+  pending: { label: 'Pending', color: '#FBBF24', icon: PauseCircle },
+  done: { label: 'Done', color: '#22C55E', icon: CheckCircle2 },
+  onhold: { label: 'On Hold', color: '#60A5FA', icon: Clock },
+  cancelled: { label: 'Cancelled', color: '#6B7280', icon: Ban },
+  urgent: { label: 'Urgent', color: '#EF4444', icon: Flame },
+  ambiguous: { label: 'Ambiguous', color: '#A78BFA', icon: HelpCircle },
+};
+
+export const Calendar = ({ 
+  events, 
+  onEventClick, 
+  onDateSelect,
+  onEventDrop,
+  onEventResize 
+}: CalendarProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [view, setView] = useState<ViewType>('week');
+  const [view, setView] = useState<ViewType>('timeGridWeek');
+  const calendarRef = useRef<any>(null);
   const { categories } = useCategories();
   const isMobile = useIsMobile();
-
-  const navigatePrevious = () => {
-    if (view === 'week') {
-      setCurrentDate(subWeeks(currentDate, 1));
-    } else {
-      setCurrentDate(subMonths(currentDate, 1));
-    }
-  };
-
-  const navigateNext = () => {
-    if (view === 'week') {
-      setCurrentDate(addWeeks(currentDate, 1));
-    } else {
-      setCurrentDate(addMonths(currentDate, 1));
-    }
-  };
-
-  const goToToday = () => {
-    setCurrentDate(new Date());
-  };
-
-  const getWeekDays = () => {
-    const start = startOfWeek(currentDate);
-    return Array.from({ length: 7 }, (_, i) => addDays(start, i));
-  };
-
-  const getMonthDays = () => {
-    const monthStart = startOfMonth(currentDate);
-    const monthEnd = endOfMonth(currentDate);
-    const calendarStart = startOfWeek(monthStart);
-    const calendarEnd = addDays(startOfWeek(monthEnd), 41); // 6 weeks * 7 days
-    
-    return eachDayOfInterval({ start: calendarStart, end: calendarEnd }).slice(0, 42);
-  };
-
-  const getEventsForDate = (date: Date) => {
-    return events.filter(event => isSameDay(event.start, date));
-  };
-
-  const formatTime = (date: Date) => {
-    return format(date, 'h:mm a');
-  };
+  const { courses } = useCourses();
 
   const getEventColor = (event: Event) => {
+    if (event.id.startsWith('task-')) {
+      return '#F472B6'; // pink for tasks
+    }
     if (event.categoryId) {
       const category = categories.find(c => c.id === event.categoryId);
       return category?.colorHex || '#3B82F6';
@@ -78,44 +66,167 @@ export const Calendar = ({ events, onEventClick, onDateSelect }: CalendarProps) 
     return colors[event.type] || '#3B82F6';
   };
 
-  const weekDays = getWeekDays();
-  const monthDays = getMonthDays();
-  const timeSlots = Array.from({ length: 24 }, (_, i) => i);
+  const handleEventDrop = (info: any) => {
+    // Prevent drag/resize for tasks
+    if (info.event.id.startsWith('task-')) {
+      info.revert();
+      return;
+    }
+    const event = events.find(e => e.id === info.event.id);
+    if (event && onEventDrop) {
+      onEventDrop(event, info.event.start, info.event.end);
+    }
+  };
+
+  const handleEventResize = (info: any) => {
+    // Prevent drag/resize for tasks
+    if (info.event.id.startsWith('task-')) {
+      info.revert();
+      return;
+    }
+    const event = events.find(e => e.id === info.event.id);
+    if (event && onEventResize) {
+      onEventResize(event, info.event.start, info.event.end);
+    }
+  };
+
+  const handleViewChange = (newView: ViewType) => {
+    setView(newView);
+    if (calendarRef.current) {
+      calendarRef.current.getApi().changeView(newView);
+    }
+  };
+
+  const handlePrev = () => {
+    if (calendarRef.current) {
+      calendarRef.current.getApi().prev();
+      setCurrentDate(calendarRef.current.getApi().getDate());
+    }
+  };
+
+  const handleNext = () => {
+    if (calendarRef.current) {
+      calendarRef.current.getApi().next();
+      setCurrentDate(calendarRef.current.getApi().getDate());
+    }
+  };
+
+  const handleToday = () => {
+    if (calendarRef.current) {
+      calendarRef.current.getApi().today();
+      setCurrentDate(new Date());
+    }
+  };
+
+  const renderEventContent = (arg: any) => {
+    const isTask = arg.event.id.startsWith('task-');
+    const description = arg.event.extendedProps?.description;
+    const { status, priority, courseId, categoryId } = arg.event.extendedProps || {};
+    let courseColor, categoryColor;
+    if (courseId && courses) {
+      const course = courses.find((c) => c.id === courseId);
+      courseColor = course?.colorHex;
+    }
+    if (categoryId && categories) {
+      const category = categories.find((c) => c.id === categoryId);
+      categoryColor = category?.colorHex;
+    }
+    // Status UI for tasks
+    let statusDot = null;
+    if (isTask && status && STATUS_CONFIG[status]) {
+      const StatusIcon = STATUS_CONFIG[status].icon;
+      statusDot = (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="flex items-center mr-1">
+              <StatusIcon className="w-3.5 h-3.5" style={{ color: STATUS_CONFIG[status].color }} />
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="top">{STATUS_CONFIG[status].label}</TooltipContent>
+        </Tooltip>
+      );
+    }
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="flex flex-col cursor-pointer">
+            <div className="flex items-center gap-1">
+              {statusDot}
+              {courseColor && <span title="Course color" className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: courseColor }}></span>}
+              {categoryColor && <span title="Category color" className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: categoryColor }}></span>}
+              <span className="font-semibold">{arg.event.title}</span>
+            </div>
+            {isTask && (
+              <div className="flex space-x-1 mt-1">
+                {status && (
+                  <span className={`text-xs rounded px-1 py-0.5 font-semibold`} style={{ background: STATUS_CONFIG[status]?.color + '22', color: STATUS_CONFIG[status]?.color }}>
+                    {STATUS_CONFIG[status]?.label}
+                  </span>
+                )}
+                {priority && (
+                  <span className={`text-xs rounded px-1 py-0.5 ${priority === 'high' ? 'bg-red-200 text-red-800' : priority === 'medium' ? 'bg-yellow-200 text-yellow-800' : 'bg-green-200 text-green-800'}`}>{priority}</span>
+                )}
+              </div>
+            )}
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-xs z-[9999] fixed">
+          <div className="text-sm">
+            <div className="font-semibold">{arg.event.title}</div>
+            {description && <div className="mt-1">{description}</div>}
+            {isTask && (
+              <div className="mt-1 flex space-x-2">
+                {status && <span>Status: {STATUS_CONFIG[status]?.label}</span>}
+                {priority && <span>Priority: {priority}</span>}
+              </div>
+            )}
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    );
+  };
+
+  if (!events || events.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96 text-gray-500 dark:text-gray-400">
+        <span className="text-2xl mb-2">📅</span>
+        <span>No events or tasks to display. Add one to get started!</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
       {/* Calendar Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2">
+          <Button variant="ghost" size="icon" onClick={handlePrev} aria-label="Previous">
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
             {format(currentDate, 'MMMM yyyy')}
           </h2>
-          <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" onClick={navigatePrevious}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="sm" onClick={goToToday}>
-              Today
-            </Button>
-            <Button variant="outline" size="sm" onClick={navigateNext}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
+          <Button variant="ghost" size="icon" onClick={handleNext} aria-label="Next">
+            <ChevronRight className="w-5 h-5" />
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleToday}>
+            Today
+          </Button>
         </div>
 
         <div className="flex items-center space-x-2">
           <Button
-            variant={view === 'week' ? 'default' : 'outline'}
+            variant={view === 'timeGridWeek' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setView('week')}
+            onClick={() => handleViewChange('timeGridWeek')}
             className="flex-1 sm:flex-none"
           >
             Week
           </Button>
           <Button
-            variant={view === 'month' ? 'default' : 'outline'}
+            variant={view === 'dayGridMonth' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setView('month')}
+            onClick={() => handleViewChange('dayGridMonth')}
             className="flex-1 sm:flex-none"
           >
             Month
@@ -133,121 +244,62 @@ export const Calendar = ({ events, onEventClick, onDateSelect }: CalendarProps) 
       {/* Calendar Grid */}
       <Card>
         <CardContent className="p-0">
-          {view === 'week' ? (
-            <div className="overflow-x-auto -mx-4 sm:mx-0">
-              <div className="min-w-[800px] sm:min-w-full">
-                {/* Week Header */}
-                <div className="grid grid-cols-8 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                  <div className="p-2 sm:p-4 text-sm font-medium text-gray-700 dark:text-gray-300"></div>
-                  {weekDays.map((day, index) => (
-                    <div key={index} className="p-2 sm:p-4 text-center border-l border-gray-200 dark:border-gray-700">
-                      <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {format(day, 'EEE')}
-                      </div>
-                      <div className={`text-lg sm:text-2xl font-bold mt-1 ${
-                        isSameDay(day, new Date()) ? 'text-blue-600' : 'text-gray-900 dark:text-gray-100'
-                      }`}>
-                        {format(day, 'd')}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Time Grid */}
-                <div className="relative">
-                  {timeSlots.map((hour) => (
-                    <div key={hour} className="grid grid-cols-8 border-b border-gray-100 dark:border-gray-700 min-h-[60px]">
-                      <div className="p-2 text-sm text-gray-500 dark:text-gray-400 text-right border-r border-gray-200 dark:border-gray-700">
-                        {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
-                      </div>
-                      {weekDays.map((day, dayIndex) => (
-                        <div
-                          key={dayIndex}
-                          className="border-l border-gray-200 dark:border-gray-700 p-1 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                          onClick={() => onDateSelect(new Date(day.getTime() + hour * 60 * 60 * 1000))}
-                        >
-                          {getEventsForDate(day)
-                            .filter(event => event.start.getHours() === hour)
-                            .map((event) => (
-                              <div
-                                key={event.id}
-                                className="text-white text-xs p-2 rounded mb-1 cursor-pointer hover:opacity-90 transition-opacity touch-manipulation"
-                                style={{ backgroundColor: getEventColor(event) }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onEventClick(event);
-                                }}
-                              >
-                                <div className="font-medium truncate">{event.title}</div>
-                                <div className="opacity-90">
-                                  {formatTime(event.start)} - {formatTime(event.end)}
-                                </div>
-                              </div>
-                            ))}
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="p-2 sm:p-4">
-              {/* Month Header */}
-              <div className="grid grid-cols-7 mb-2 sm:mb-4">
-                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                  <div key={day} className="p-1 sm:p-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {day}
-                  </div>
-                ))}
-              </div>
-
-              {/* Month Grid */}
-              <div className="grid grid-cols-7 gap-1">
-                {monthDays.map((day, index) => {
-                  const dayEvents = getEventsForDate(day);
-                  const isCurrentMonth = isSameMonth(day, currentDate);
-                  const isToday = isSameDay(day, new Date());
-
-                  return (
-                    <div
-                      key={index}
-                      className={`min-h-[80px] sm:min-h-[120px] p-1 sm:p-2 border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors touch-manipulation ${
-                        !isCurrentMonth ? 'bg-gray-50 dark:bg-gray-800 text-gray-400' : 'bg-white dark:bg-gray-900'
-                      } ${isToday ? 'ring-2 ring-blue-500' : ''}`}
-                      onClick={() => onDateSelect(day)}
-                    >
-                      <div className={`text-sm font-medium mb-1 ${
-                        isToday ? 'text-blue-600' : isCurrentMonth ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400'
-                      }`}>
-                        {format(day, 'd')}
-                      </div>
-                      <div className="space-y-1">
-                        {dayEvents.slice(0, isMobile ? 2 : 3).map((event) => (
-                          <div
-                            key={event.id}
-                            className="text-white text-xs p-1 rounded truncate cursor-pointer hover:opacity-90 touch-manipulation"
-                            style={{ backgroundColor: getEventColor(event) }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onEventClick(event);
-                            }}
-                          >
-                            {event.title}
-                          </div>
-                        ))}
-                        {dayEvents.length > (isMobile ? 2 : 3) && (
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            +{dayEvents.length - (isMobile ? 2 : 3)} more
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          <div className="fc-theme-standard">
+            <FullCalendar
+              ref={calendarRef}
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+              initialView={view}
+              headerToolbar={false}
+              height="auto"
+              events={events.map(event => {
+                const isTask = typeof event.id === 'string' && event.id.startsWith('task-');
+                return {
+                  id: event.id,
+                  title: event.title,
+                  start: event.start,
+                  end: event.end,
+                  allDay: event.isAllDay,
+                  backgroundColor: getEventColor(event),
+                  borderColor: getEventColor(event),
+                  textColor: '#ffffff',
+                  extendedProps: {
+                    description: event.description,
+                    categoryId: event.categoryId,
+                    courseId: event.courseId,
+                    status: isTask ? (event as any).extendedProps?.status ?? (event as any).status : undefined,
+                    priority: isTask ? (event as any).extendedProps?.priority ?? (event as any).priority : undefined,
+                  }
+                };
+              })}
+              editable={true}
+              droppable={true}
+              eventDrop={handleEventDrop}
+              eventResize={handleEventResize}
+              eventClick={(info) => {
+                const event = events.find(e => e.id === info.event.id);
+                if (event) onEventClick(event);
+              }}
+              dateClick={(info) => onDateSelect(info.date)}
+              nowIndicator={true}
+              slotMinTime="00:00:00"
+              slotMaxTime="24:00:00"
+              slotDuration="00:30:00"
+              allDaySlot={true}
+              expandRows={true}
+              stickyHeaderDates={true}
+              dayMaxEvents={isMobile ? 2 : 3}
+              views={{
+                timeGridWeek: {
+                  titleFormat: { month: 'long', year: 'numeric' },
+                  slotLabelFormat: { hour: 'numeric', minute: '2-digit', hour12: true }
+                },
+                dayGridMonth: {
+                  titleFormat: { month: 'long', year: 'numeric' }
+                }
+              }}
+              eventContent={renderEventContent}
+            />
+          </div>
         </CardContent>
       </Card>
     </div>

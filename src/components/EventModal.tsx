@@ -115,7 +115,7 @@ export const EventModal = ({
       type: 'CLASS',
       description: formData.description,
       isAllDay: formData.isAllDay,
-      categoryId: formData.categoryId || undefined,
+      categoryId: formData.categoryId === 'none' ? undefined : formData.categoryId || undefined,
       courseId: formData.courseId === 'none' ? undefined : formData.courseId || undefined,
       reminderSettings: formData.reminderMinutes > 0 ? [{ minutesBefore: formData.reminderMinutes }] : [],
     }, recurrenceSettings);
@@ -163,27 +163,21 @@ export const EventModal = ({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="category">Category</Label>
                 <Select
-                  value={formData.categoryId}
+                  value={formData.categoryId || 'none'}
                   onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
+                    <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-gray-900">
+                  <SelectContent>
                     <SelectItem value="none">No category</SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
-                        <div className="flex items-center space-x-2">
-                          <div
-                            className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: category.colorHex }}
-                          />
-                          <span>{category.name}</span>
-                        </div>
+                        {category.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -191,15 +185,15 @@ export const EventModal = ({
               </div>
 
               <div>
-                <Label htmlFor="course">Course (Optional)</Label>
+                <Label htmlFor="course">Course</Label>
                 <Select
-                  value={formData.courseId}
+                  value={formData.courseId || 'none'}
                   onValueChange={(value) => setFormData({ ...formData, courseId: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select course" />
+                    <SelectValue placeholder="Select a course" />
                   </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-gray-900">
+                  <SelectContent>
                     <SelectItem value="none">No course</SelectItem>
                     {courses.map((course) => (
                       <SelectItem key={course.id} value={course.id}>

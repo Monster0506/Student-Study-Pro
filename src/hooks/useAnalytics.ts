@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { TimeUsageData, StudyGoalProgress } from '@/types';
@@ -45,12 +44,9 @@ export const useTimeUsageAnalytics = (startDate: Date, endDate: Date) => {
   });
 };
 
-export const useStudyGoalProgress = () => {
-  const weekStart = startOfWeek(new Date());
-  const weekEnd = endOfWeek(new Date());
-
+export const useStudyGoalProgress = (start: Date, end: Date) => {
   return useQuery({
-    queryKey: ['analytics', 'study-goals', format(weekStart, 'yyyy-MM-dd')],
+    queryKey: ['analytics', 'study-goals', format(start, 'yyyy-MM-dd'), format(end, 'yyyy-MM-dd')],
     queryFn: async (): Promise<StudyGoalProgress[]> => {
       // Get active study goals
       const { data: goals, error: goalsError } = await supabase
@@ -63,7 +59,7 @@ export const useStudyGoalProgress = () => {
 
       if (goalsError) throw goalsError;
 
-      // Get study events for this week
+      // Get study events for this period
       const { data: events, error: eventsError } = await supabase
         .from('events')
         .select(`
@@ -72,8 +68,8 @@ export const useStudyGoalProgress = () => {
           course_id,
           event_categories!inner(name)
         `)
-        .gte('start_time', weekStart.toISOString())
-        .lte('start_time', weekEnd.toISOString())
+        .gte('start_time', start.toISOString())
+        .lte('start_time', end.toISOString())
         .eq('event_categories.name', 'Study');
 
       if (eventsError) throw eventsError;
@@ -85,7 +81,6 @@ export const useStudyGoalProgress = () => {
           const startTime = new Date(event.start_time);
           const endTime = new Date(event.end_time);
           const hours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
-          
           if (!studyHours[event.course_id]) {
             studyHours[event.course_id] = 0;
           }
@@ -96,7 +91,6 @@ export const useStudyGoalProgress = () => {
       return goals.map((goal: any) => {
         const actualHours = studyHours[goal.course_id] || 0;
         const progress = Math.min((actualHours / goal.target_hours_weekly) * 100, 100);
-
         return {
           courseId: goal.course_id,
           courseName: goal.course.name,
