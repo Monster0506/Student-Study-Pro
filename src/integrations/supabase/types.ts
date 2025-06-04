@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       courses: {
         Row: {
+          canvas_id: string | null
           code: string | null
           color_hex: string | null
           created_at: string | null
@@ -21,6 +22,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          canvas_id?: string | null
           code?: string | null
           color_hex?: string | null
           created_at?: string | null
@@ -31,6 +33,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          canvas_id?: string | null
           code?: string | null
           color_hex?: string | null
           created_at?: string | null
@@ -74,6 +77,8 @@ export type Database = {
       }
       events: {
         Row: {
+          canvas_id: string | null
+          canvas_type: string | null
           category_id: string | null
           course_id: string | null
           created_at: string | null
@@ -92,6 +97,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          canvas_id?: string | null
+          canvas_type?: string | null
           category_id?: string | null
           course_id?: string | null
           created_at?: string | null
@@ -110,6 +117,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          canvas_id?: string | null
+          canvas_type?: string | null
           category_id?: string | null
           course_id?: string | null
           created_at?: string | null
@@ -150,7 +159,7 @@ export type Database = {
           created_at: string | null
           id: string
           is_active: boolean | null
-          start_date: string | null
+          start_date: string
           target_hours_weekly: number
           updated_at: string | null
           user_id: string
@@ -160,7 +169,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_active?: boolean | null
-          start_date?: string | null
+          start_date: string
           target_hours_weekly: number
           updated_at?: string | null
           user_id: string
@@ -170,7 +179,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_active?: boolean | null
-          start_date?: string | null
+          start_date?: string
           target_hours_weekly?: number
           updated_at?: string | null
           user_id?: string

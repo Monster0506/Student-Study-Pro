@@ -157,6 +157,5 @@ export async function fetchCanvasAnnouncements(baseUrl: string, token: string, c
       url = '';
     }
   }
-  console.log(allAnnouncements)
   return allAnnouncements;
 } 

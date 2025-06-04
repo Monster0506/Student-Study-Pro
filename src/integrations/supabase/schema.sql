@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS public.courses (
     code TEXT,
     instructor TEXT,
     color_hex TEXT DEFAULT '#10B981',
+    canvas_id TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
