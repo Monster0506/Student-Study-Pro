@@ -60,9 +60,7 @@ export default async function handler(req: any, res: any) {
             if (contentType.includes('application/json')) {
 
                 const data = await canvasRes.json();
-                if (context_codes) {
-                    console.log(data)
-                }
+
 
                 if (Array.isArray(data)) {
                     allData = allData.concat(data);

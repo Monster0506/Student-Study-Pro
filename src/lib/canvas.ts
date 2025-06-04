@@ -141,7 +141,6 @@ export async function fetchCanvasDiscussionTopics(baseUrl: string, token: string
     const res = await fetch(url);
     if (!res.ok) throw new Error('Failed to fetch announcements');
     const data = await res.json();
-    console.log(data)
     allAnnouncements = allAnnouncements.concat(data);
     const link = res.headers.get('Link');
     if (link) {
