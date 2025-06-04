@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Course } from '@/types';
@@ -28,6 +27,7 @@ export const useCourses = () => {
         code: course.code,
         instructor: course.instructor,
         colorHex: course.color_hex,
+        canvas_id: course.canvas_id,
       }));
     },
   });
@@ -45,6 +45,7 @@ export const useCourses = () => {
           instructor: courseData.instructor,
           color_hex: courseData.colorHex,
           user_id: userData.user.id,
+          canvas_id: courseData.canvas_id,
         })
         .select()
         .single();
@@ -77,6 +78,7 @@ export const useCourses = () => {
           code: courseData.code,
           instructor: courseData.instructor,
           color_hex: courseData.colorHex,
+          canvas_id: courseData.canvas_id,
         })
         .eq('id', id)
         .select()
