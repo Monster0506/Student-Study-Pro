@@ -7,8 +7,9 @@ import { Event } from '@/types';
 import { RecurrenceSettings } from '@/components/RecurrenceModal';
 import { useEvents } from '@/hooks/useEvents';
 import { useTasks } from '@/hooks/useTasks';
-import { addDays, addWeeks, addMonths, setDate, getDay, getDate, getMonth, getYear } from 'date-fns';
+import { addDays, addWeeks, addMonths, setDate, getDay, getDate, getMonth, getYear, format } from 'date-fns';
 import { TaskModal } from '@/components/TaskModal';
+import { DashboardSummaryGrid } from '@/components/dashboard/DashboardSummaryGrid';
 
 const AuthenticatedApp = () => {
   const { user, loading } = useAuth();
@@ -206,8 +207,30 @@ const AuthenticatedApp = () => {
     setSelectedEvent(null);
   };
 
+  // Summary data
+  const today = new Date();
+  const userName = user?.user_metadata?.full_name || user?.email || 'Student';
+  const upcomingEvents = allEvents
+    .filter(e => e.start > today)
+    .sort((a, b) => a.start.getTime() - b.start.getTime())
+    .slice(0, 3);
+  const tasksDueSoon = tasks
+    .filter(t => t.dueDate && t.dueDate > today && t.status !== 'done')
+    .sort((a, b) => a.dueDate!.getTime() - b.dueDate!.getTime())
+    .slice(0, 3);
+  // Placeholder for Pomodoro stats
+  const pomodoroStats = { completed: 0, today: 0 };
+
   return (
     <div className="space-y-6">
+      <DashboardSummaryGrid
+        userName={userName}
+        today={today}
+        upcomingEvents={upcomingEvents}
+        tasksDueSoon={tasksDueSoon}
+        pomodoroStats={pomodoroStats}
+      />
+      {/* Calendar */}
       <Calendar 
         events={allEvents}
         onEventClick={handleEventClick}

@@ -84,11 +84,11 @@ export const useTasks = () => {
   const updateTaskMutation = useMutation({
     mutationFn: async ({ id, course, ...taskData }: Task) => {
       const updateObj: any = {
-        title: taskData.title,
-        description: taskData.description,
-        due_date: taskData.dueDate?.toISOString(),
-        priority: taskData.priority,
-        status: taskData.status,
+          title: taskData.title,
+          description: taskData.description,
+          due_date: taskData.dueDate?.toISOString(),
+          priority: taskData.priority,
+          status: taskData.status,
         course_id: taskData.courseId === undefined ? null : taskData.courseId,
       };
       

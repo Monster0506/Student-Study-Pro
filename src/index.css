@@ -168,3 +168,121 @@
 .dark .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
   background: theme('colors.blue.800');
 }
+
+/* FullCalendar popover dark mode fix */
+.dark .fc-popover {
+  background: #1e293b !important; /* Tailwind slate-800 */
+  color: #f1f5f9 !important;      /* Tailwind slate-100 */
+  border-color: #334155 !important; /* Tailwind slate-700 */
+}
+.dark .fc-popover .fc-popover-header {
+  background: #334155 !important; /* Tailwind slate-700 */
+  color: #f1f5f9 !important;
+}
+.dark .fc-popover .fc-popover-body {
+  background: #1e293b !important;
+  color: #f1f5f9 !important;
+}
+
+/* Prevent event title overflow and improve overlapping event appearance */
+.fc .fc-timegrid-event {
+  min-width: 80px;
+  max-width: 95%;
+  overflow: hidden;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.06) !important;
+  padding: 4px 8px !important;
+  background-clip: padding-box;
+  z-index: 2;
+  border: 1.5px solid rgba(0,0,0,0.08);
+}
+
+.fc .fc-timegrid-event .fc-event-main {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.fc .fc-timegrid-event .fc-event-title {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 120px;
+  display: block;
+}
+
+@media (min-width: 640px) {
+  .fc .fc-timegrid-event .fc-event-title {
+    max-width: 180px;
+  }
+}
+
+/* Make overlapping events in time grid stack vertically and use full width */
+.fc .fc-timegrid-event-harness {
+  width: 100% !important;
+  left: 0 !important;
+}
+.fc .fc-timegrid-event {
+  width: 100% !important;
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+}
+
+/* Style the +N more link in FullCalendar */
+.fc .fc-more-link {
+  background: #2563eb !important; /* Tailwind blue-600 */
+  color: #fff !important;
+  border-radius: 0.375rem !important;
+  padding: 2px 10px !important;
+  font-weight: 600;
+  font-size: 0.95em;
+  transition: background 0.15s;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.08);
+  cursor: pointer;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  display: inline-block;
+}
+
+.fc .fc-more-link:hover,
+.fc .fc-more-link:focus {
+  background: #1d4ed8 !important; /* Tailwind blue-700 */
+  color: #fff !important;
+}
+
+.dark .fc .fc-more-link {
+  background: #1e293b !important; /* Tailwind slate-800 */
+  color: #f1f5f9 !important;      /* Tailwind slate-100 */
+  border: 1px solid #334155 !important; /* Tailwind slate-700 */
+}
+
+.dark .fc .fc-more-link:hover,
+.dark .fc .fc-more-link:focus {
+  background: #2563eb !important; /* Tailwind blue-600 */
+  color: #fff !important;
+}
+
+/* === FullCalendar Month View Event Row Truncation === */
+.fc .fc-daygrid-event {
+  max-width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+.fc .fc-daygrid-event > div,
+.fc .fc-daygrid-event .flex,
+.fc .fc-daygrid-event .flex-col,
+.fc .fc-daygrid-event .flex-row {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  flex: 1 1 0%;
+}
+.fc .fc-daygrid-event .truncate {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

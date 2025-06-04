@@ -1,4 +1,4 @@
-export type EventType = 'CLASS' | 'STUDY' | 'PERSONAL' | 'APPOINTMENT';
+export type EventType = 'CLASS' | 'STUDY' | 'PERSONAL' | 'APPOINTMENT' | 'QUIZ';
 
 export interface Event {
   id: string;
@@ -12,6 +12,8 @@ export interface Event {
   courseId?: string;
   rruleString?: string;
   reminderSettings?: ReminderSetting[];
+  canvas_id?: string;
+  canvas_type?: string;
 }
 
 export interface EventCategory {
@@ -27,6 +29,7 @@ export interface Course {
   code?: string;
   instructor?: string;
   colorHex: string;
+  canvas_id?: string;
 }
 
 export interface Task {
@@ -103,14 +106,16 @@ export const EVENT_TYPE_COLORS = {
   CLASS: 'bg-blue-500',
   STUDY: 'bg-green-500',
   PERSONAL: 'bg-purple-500',
-  APPOINTMENT: 'bg-orange-500'
+  APPOINTMENT: 'bg-orange-500',
+  QUIZ: 'bg-pink-500',
 } as const;
 
 export const EVENT_TYPE_LABELS = {
   CLASS: 'Class',
   STUDY: 'Study',
   PERSONAL: 'Personal',
-  APPOINTMENT: 'Appointment'
+  APPOINTMENT: 'Appointment',
+  QUIZ: 'Quiz',
 } as const;
 
 export const PRIORITY_COLORS = {

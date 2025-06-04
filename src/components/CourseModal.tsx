@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -11,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Course } from '@/types';
 import { useCourses } from '@/hooks/useCourses';
+import { CourseColorPicker } from './courses/CourseColorPicker';
 
 interface CourseModalProps {
   isOpen: boolean;
@@ -65,11 +65,6 @@ export const CourseModal = ({ isOpen, onClose, course }: CourseModalProps) => {
     onClose();
   };
 
-  const colorOptions = [
-    '#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#06B6D4',
-    '#84CC16', '#EC4899', '#6366F1', '#F97316', '#14B8A6', '#A855F7'
-  ];
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md bg-white dark:bg-gray-900">
@@ -113,19 +108,7 @@ export const CourseModal = ({ isOpen, onClose, course }: CourseModalProps) => {
 
           <div>
             <Label>Course Color</Label>
-            <div className="grid grid-cols-6 gap-2 mt-2">
-              {colorOptions.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  className={`w-8 h-8 rounded-full border-2 ${
-                    formData.colorHex === color ? 'border-gray-800 dark:border-gray-200' : 'border-gray-300'
-                  }`}
-                  style={{ backgroundColor: color }}
-                  onClick={() => setFormData({ ...formData, colorHex: color })}
-                />
-              ))}
-            </div>
+            <CourseColorPicker color={formData.colorHex} onChange={color => setFormData({ ...formData, colorHex: color })} />
           </div>
 
           <div className="flex space-x-3 pt-4">

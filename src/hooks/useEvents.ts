@@ -1,7 +1,7 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Event, EventType } from '@/types';
+import { Event, EventType, ReminderSetting } from '@/types';
+import { PostgrestError } from '@supabase/supabase-js';
 import { useToast } from '@/hooks/use-toast';
 
 interface DatabaseEvent {
@@ -9,7 +9,7 @@ interface DatabaseEvent {
   title: string;
   start_time: string;
   end_time: string;
-  event_type: EventType;
+  event_type: string;
   description?: string;
   is_all_day?: boolean;
   series_id?: string;
@@ -20,6 +20,8 @@ interface DatabaseEvent {
   reminder_settings_json?: any;
   event_categories?: any;
   courses?: any;
+  canvas_id?: string;
+  canvas_type?: string;
 }
 
 const transformDatabaseEvent = (dbEvent: DatabaseEvent): Event => ({
@@ -34,27 +36,28 @@ const transformDatabaseEvent = (dbEvent: DatabaseEvent): Event => ({
   courseId: dbEvent.course_id,
   rruleString: dbEvent.rrule_string,
   reminderSettings: dbEvent.reminder_settings_json || [],
+  canvas_id: dbEvent.canvas_id,
+  canvas_type: dbEvent.canvas_type,
 });
 
 export const useEvents = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const {
-    data: events = [],
-    isLoading,
-    error,
-  } = useQuery({
+  const { data: events = [], isLoading, error } = useQuery<Event[], PostgrestError>({
     queryKey: ['events'],
     queryFn: async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error('User not authenticated');
+
       const { data, error } = await supabase
         .from('events')
         .select(`
           *,
-          event_categories(name, color_hex),
-          courses(name, color_hex)
+          event_categories (*),
+          courses (*)
         `)
-        .order('start_time', { ascending: true });
+        .eq('user_id', userData.user.id);
 
       if (error) throw error;
       return data.map(transformDatabaseEvent);
@@ -78,7 +81,9 @@ export const useEvents = () => {
           category_id: eventData.categoryId,
           course_id: eventData.courseId,
           rrule_string: eventData.rruleString,
-          reminder_settings_json: eventData.reminderSettings || [],
+          reminder_settings_json: (eventData.reminderSettings || []) as any,
+          canvas_id: eventData.canvas_id,
+          canvas_type: eventData.canvas_type,
           user_id: userData.user.id,
         })
         .select()
@@ -105,6 +110,9 @@ export const useEvents = () => {
 
   const updateEventMutation = useMutation({
     mutationFn: async ({ id, ...eventData }: Event) => {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error('User not authenticated');
+
       const { data, error } = await supabase
         .from('events')
         .update({
@@ -117,9 +125,12 @@ export const useEvents = () => {
           category_id: eventData.categoryId,
           course_id: eventData.courseId,
           rrule_string: eventData.rruleString,
-          reminder_settings_json: eventData.reminderSettings || [],
+          reminder_settings_json: (eventData.reminderSettings || []) as any,
+          canvas_id: eventData.canvas_id,
+          canvas_type: eventData.canvas_type,
         })
         .eq('id', id)
+        .eq('user_id', userData.user.id)
         .select()
         .single();
 
@@ -144,10 +155,14 @@ export const useEvents = () => {
 
   const deleteEventMutation = useMutation({
     mutationFn: async (eventId: string) => {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error('User not authenticated');
+
       const { error } = await supabase
         .from('events')
         .delete()
-        .eq('id', eventId);
+        .eq('id', eventId)
+        .eq('user_id', userData.user.id);
 
       if (error) throw error;
     },

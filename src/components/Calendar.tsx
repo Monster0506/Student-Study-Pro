@@ -1,8 +1,8 @@
 import { useState, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Plus, CheckCircle2, PauseCircle, Circle, Clock, Ban, Flame, HelpCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, CheckCircle2, PauseCircle, Circle, Clock, Ban, Flame, HelpCircle, BookOpen, FileText, ClipboardList, Megaphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Event } from '@/types';
+import { Event, EventType, EVENT_TYPE_COLORS, EVENT_TYPE_LABELS } from '@/types';
 import { useCategories } from '@/hooks/useCategories';
 import { useIsMobile } from '@/hooks/use-mobile';
 import FullCalendar from '@fullcalendar/react';
@@ -61,9 +61,10 @@ export const Calendar = ({
       CLASS: '#3B82F6',
       STUDY: '#10B981',
       PERSONAL: '#8B5CF6',
-      APPOINTMENT: '#F59E0B'
+      APPOINTMENT: '#F59E0B',
+      QUIZ: '#EC4899', // pink-500
     };
-    return colors[event.type] || '#3B82F6';
+    return colors[event.type as EventType] || '#3B82F6';
   };
 
   const handleEventDrop = (info: any) => {
@@ -121,7 +122,7 @@ export const Calendar = ({
   const renderEventContent = (arg: any) => {
     const isTask = arg.event.id.startsWith('task-');
     const description = arg.event.extendedProps?.description;
-    const { status, priority, courseId, categoryId } = arg.event.extendedProps || {};
+    const { status, priority, courseId, categoryId, type, canvas_type } = arg.event.extendedProps || {};
     let courseColor, categoryColor;
     if (courseId && courses) {
       const course = courses.find((c) => c.id === courseId);
@@ -146,15 +147,39 @@ export const Calendar = ({
         </Tooltip>
       );
     }
+    // Icon and badge for event type or canvas_type
+    let typeIcon = null;
+    let typeBadge = null;
+    // Prefer canvas_type if present
+    const canvasType = arg.event.extendedProps?.canvas_type;
+    if (canvasType === 'assignment') {
+      typeIcon = <FileText className="w-4 h-4 text-green-500 mr-1" />;
+      typeBadge = <span className="ml-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200">Assignment</span>;
+    } else if (canvasType === 'quiz') {
+      typeIcon = <ClipboardList className="w-4 h-4 text-pink-500 mr-1" />;
+      typeBadge = <span className="ml-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-200">Quiz</span>;
+    } else if (canvasType === 'announcement') {
+      typeIcon = <Megaphone className="w-4 h-4 text-purple-500 mr-1" />;
+      typeBadge = <span className="ml-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200">Announcement</span>;
+    } else if (type === 'QUIZ') {
+      typeIcon = <ClipboardList className="w-4 h-4 text-pink-500 mr-1" />;
+      typeBadge = <span className="ml-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-200">Quiz</span>;
+    } else if (type === 'CLASS') {
+      typeIcon = <BookOpen className="w-4 h-4 text-blue-500 mr-1" />;
+      typeBadge = <span className="ml-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">Class</span>;
+    } else {
+      typeIcon = <BookOpen className="w-4 h-4 text-blue-500 mr-1" />;
+    }
     return (
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex flex-col cursor-pointer">
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 min-w-0 whitespace-nowrap overflow-hidden">
               {statusDot}
-              {courseColor && <span title="Course color" className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: courseColor }}></span>}
-              {categoryColor && <span title="Category color" className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: categoryColor }}></span>}
-              <span className="font-semibold">{arg.event.title}</span>
+              {typeIcon && <span className="flex-shrink-0">{typeIcon}</span>}
+              {courseColor && <span title="Course color" className="w-2.5 h-2.5 rounded-full inline-block flex-shrink-0" style={{ backgroundColor: courseColor }}></span>}
+              {categoryColor && <span title="Category color" className="w-2.5 h-2.5 rounded-full inline-block flex-shrink-0" style={{ backgroundColor: categoryColor }}></span>}
+              <span className="font-semibold truncate overflow-hidden text-ellipsis min-w-0" title={arg.event.title}>{arg.event.title}</span>
             </div>
             {isTask && (
               <div className="flex space-x-1 mt-1">
@@ -172,7 +197,10 @@ export const Calendar = ({
         </TooltipTrigger>
         <TooltipContent side="top" className="max-w-xs z-[9999] fixed">
           <div className="text-sm">
-            <div className="font-semibold">{arg.event.title}</div>
+            <div className="font-semibold flex items-center gap-1">
+              {typeIcon}
+              {arg.event.title}
+            </div>
             {description && <div className="mt-1">{description}</div>}
             {isTask && (
               <div className="mt-1 flex space-x-2">
@@ -208,10 +236,10 @@ export const Calendar = ({
           </h2>
           <Button variant="ghost" size="icon" onClick={handleNext} aria-label="Next">
             <ChevronRight className="w-5 h-5" />
-          </Button>
+            </Button>
           <Button variant="outline" size="sm" onClick={handleToday}>
-            Today
-          </Button>
+              Today
+            </Button>
         </div>
 
         <div className="flex items-center space-x-2">
@@ -268,6 +296,9 @@ export const Calendar = ({
                     courseId: event.courseId,
                     status: isTask ? (event as any).extendedProps?.status ?? (event as any).status : undefined,
                     priority: isTask ? (event as any).extendedProps?.priority ?? (event as any).priority : undefined,
+                    type: event.type,
+                    canvas_type: event.canvas_type,
+                    canvas_id: event.canvas_id,
                   }
                 };
               })}
@@ -288,6 +319,8 @@ export const Calendar = ({
               expandRows={true}
               stickyHeaderDates={true}
               dayMaxEvents={isMobile ? 2 : 3}
+
+              eventMaxStack={2}
               views={{
                 timeGridWeek: {
                   titleFormat: { month: 'long', year: 'numeric' },
@@ -299,7 +332,7 @@ export const Calendar = ({
               }}
               eventContent={renderEventContent}
             />
-          </div>
+            </div>
         </CardContent>
       </Card>
     </div>
