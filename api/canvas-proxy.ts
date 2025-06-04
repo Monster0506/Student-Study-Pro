@@ -24,10 +24,9 @@ export default async function handler(req: any, res: any) {
             return res.status(500).json({ ok: false, error: 'Failed to fetch from Canvas.' });
         }
     }
-
     const { endpoint, token, baseUrl } = req.query;
-
-    console.log('[Canvas Proxy] Endpoint hit', { endpoint, baseUrl });
+    const context_codes = req.query['context_codes[]'];
+    console.log('[Canvas Proxy] Endpoint hit', { endpoint, baseUrl, context_codes: context_codes ? context_codes : 'none' });
 
 
     if (!endpoint || !token || !baseUrl) {
@@ -38,9 +37,13 @@ export default async function handler(req: any, res: any) {
     const url = `${baseUrl}/api/v1/${endpoint}`;
 
 
-
     try {
         let urlToFetch = url;
+
+        if (context_codes) {
+            urlToFetch += `?context_codes[]=${context_codes}`;
+
+        }
         let allData: any[] = [];
         let isPaginated = false;
         do {
@@ -55,7 +58,12 @@ export default async function handler(req: any, res: any) {
 
             const contentType = canvasRes.headers.get('content-type') || '';
             if (contentType.includes('application/json')) {
+
                 const data = await canvasRes.json();
+                if (context_codes) {
+                    console.log(data)
+                }
+
                 if (Array.isArray(data)) {
                     allData = allData.concat(data);
                     // Check for pagination

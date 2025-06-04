@@ -134,9 +134,36 @@ export async function fetchCanvasQuizzes(baseUrl: string, token: string, courseI
   return allQuizzes;
 }
 
-export async function fetchCanvasAnnouncements(baseUrl: string, token: string, courseId: number | string) {
+export async function fetchCanvasDiscussionTopics(baseUrl: string, token: string, courseId: number | string) {
   let allAnnouncements: any[] = [];
   let url = `/api/canvas-proxy?endpoint=courses/${courseId}/discussion_topics&token=${encodeURIComponent(token)}&baseUrl=${encodeURIComponent(baseUrl)}&per_page=50&only_announcements=true`;
+  while (url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Failed to fetch announcements');
+    const data = await res.json();
+    console.log(data)
+    allAnnouncements = allAnnouncements.concat(data);
+    const link = res.headers.get('Link');
+    if (link) {
+      const match = link.match(/<([^>]+)>; rel=\"next\"/);
+      if (match) {
+        const nextUrl = new URL(match[1]);
+        const endpoint = nextUrl.pathname.replace('/api/v1/', '');
+        const search = nextUrl.search;
+        url = `/api/canvas-proxy?endpoint=${encodeURIComponent(endpoint)}&token=${encodeURIComponent(token)}&baseUrl=${encodeURIComponent(baseUrl)}${search}`;
+      } else {
+        url = '';
+      }
+    } else {
+      url = '';
+    }
+  }
+  return allAnnouncements;
+}
+export async function fetchCanvasAnnouncements(baseUrl: string, token: string, courseId: number | string) {
+  let allAnnouncements: any[] = [];
+  let url = `/api/canvas-proxy?endpoint=announcements${courseId ? `&context_codes[]=course_${courseId}` : ""}&token=${encodeURIComponent(token)}&baseUrl=${encodeURIComponent(baseUrl)}&per_page=50&only_announcements=true`;
+
   while (url) {
     const res = await fetch(url);
     if (!res.ok) throw new Error('Failed to fetch announcements');

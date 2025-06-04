@@ -5,7 +5,7 @@ import { useCategories } from '@/hooks/useCategories';
 import { usePreferences } from '@/hooks/usePreferences';
 import { CategoryModal } from '@/components/CategoryModal';
 import { EventCategory } from '@/types';
-import { fetchCanvasCourses, fetchCanvasAssignments, fetchCanvasQuizzes, fetchCanvasAnnouncements } from '@/lib/canvas';
+import { fetchCanvasCourses, fetchCanvasAssignments, fetchCanvasQuizzes, fetchCanvasDiscussionTopics, fetchCanvasAnnouncements } from '@/lib/canvas';
 import { useCourses } from '@/hooks/useCourses';
 import { useEvents } from '@/hooks/useEvents';
 import { EventCategoriesSection } from '@/components/settings/EventCategoriesSection';
@@ -32,6 +32,7 @@ const Settings = () => {
   const [importLoading, setImportLoading] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [isPreviewed, setIsPreviewed] = useState(false);
+  const [loadingStep, setLoadingStep] = useState<'idle' | 'connecting' | 'fetching_courses' | 'fetching_assignments' | 'fetching_quizzes' | 'fetching_announcements' | 'fetching_discussions' | 'saving' | 'importing'>('idle');
 
   const { createCourse, courses: localCourses } = useCourses();
   const { createEvent, events: localEvents } = useEvents();
@@ -47,7 +48,7 @@ const Settings = () => {
 
   if (!user) {
     return (
-      <LoginForm 
+      <LoginForm
         onToggleMode={() => setIsSignUp(!isSignUp)}
         isSignUp={isSignUp}
       />
@@ -100,18 +101,20 @@ const Settings = () => {
     setImportError(null);
     setImportPreview([]);
     setIsPreviewed(false);
+    setLoadingStep('fetching_courses');
     try {
       let courses = await fetchCanvasCourses(canvasUrl, canvasToken);
       if (typeof courses === 'string') {
         courses = JSON.parse(courses);
       }
-      type CanvasCourse = { id: number|string, name?: string, course_code?: string };
+      type CanvasCourse = { id: number | string, name?: string, course_code?: string };
       const typedCourses: CanvasCourse[] = Array.isArray(courses)
         ? (courses as any[]).filter(c => typeof c === 'object' && c !== null && 'id' in c && !c.access_restricted_by_date)
         : [];
       const allItems = [];
       for (const course of typedCourses) {
         const courseId = course.id;
+        setLoadingStep('fetching_assignments');
         const assignments = await fetchCanvasAssignments(canvasUrl, canvasToken, courseId);
         assignments
           .filter((a: any) => a.due_at)
@@ -127,6 +130,7 @@ const Settings = () => {
               canvas_type: 'assignment',
             });
           });
+        setLoadingStep('fetching_quizzes');
         const quizzes = await fetchCanvasQuizzes(canvasUrl, canvasToken, courseId);
         quizzes
           .filter((q: any) => q.due_at)
@@ -142,6 +146,7 @@ const Settings = () => {
               canvas_type: 'quiz',
             });
           });
+        setLoadingStep('fetching_announcements');
         const announcements = await fetchCanvasAnnouncements(canvasUrl, canvasToken, courseId);
         announcements
           .filter((a: any) => a.posted_at)
@@ -157,19 +162,38 @@ const Settings = () => {
               canvas_type: 'announcement',
             });
           });
+        setLoadingStep('fetching_discussions');
+        const discussions = await fetchCanvasDiscussionTopics(canvasUrl, canvasToken, courseId);
+        discussions
+          .filter((a: any) => a.posted_at)
+          .forEach((a: any) => {
+            allItems.push({
+              id: `discussion-${a.id}`,
+              title: a.title,
+              due_at: a.posted_at,
+              course: course.name || course.course_code || 'Unknown Course',
+              description: a.message || '',
+              type: 'CLASS',
+              canvas_id: String(a.id),
+              canvas_type: 'discussion_topic',
+            });
+          });
       }
       setImportPreview(allItems);
       setIsPreviewed(true);
       setImportLoading(false);
+      setLoadingStep('idle');
     } catch (err: any) {
       setImportError(err.message || 'Failed to import from Canvas.');
       setImportLoading(false);
+      setLoadingStep('idle');
     }
   };
   const handleConfirmImport = async () => {
     if (!importPreview.length) return;
     setImportLoading(true);
     setImportError(null);
+    setLoadingStep('saving');
     try {
       let courses = await fetchCanvasCourses(canvasUrl, canvasToken);
       if (typeof courses === 'string') {
@@ -234,9 +258,11 @@ const Settings = () => {
       }
       setImportLoading(false);
       setImportError(null);
+      setLoadingStep('idle');
       alert('Import complete!');
     } catch (err: any) {
       setImportLoading(false);
+      setLoadingStep('idle');
       setImportError(err.message || 'Failed to import Canvas data.');
     }
   };
@@ -269,6 +295,7 @@ const Settings = () => {
         onPreview={handleImportCanvas}
         onImport={handleConfirmImport}
         onRemovePreviewItem={idx => setImportPreview(prev => prev.filter((_, i) => i !== idx))}
+        loadingStep={loadingStep}
       />
       <CategoryModal
         isOpen={isCategoryModalOpen}

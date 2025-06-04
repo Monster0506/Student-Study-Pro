@@ -19,7 +19,8 @@ export const CanvasImportSummary: React.FC<CanvasImportSummaryProps> = ({ import
       <div className="flex flex-wrap gap-4">
         <span>Assignments: <span className="font-bold text-green-600">{importPreview.filter(i => i.canvas_type === 'assignment').length}</span></span>
         <span>Quizzes: <span className="font-bold text-pink-600">{importPreview.filter(i => i.canvas_type === 'quiz').length}</span></span>
-        <span>Announcements: <span className="font-bold text-purple-600">{importPreview.filter(i => i.canvas_type === 'announcement').length}</span></span>
+        <span>Discussion Topics: <span className="font-bold text-purple-600">{importPreview.filter(i => i.canvas_type === 'discussion_topic').length}</span></span>
+        <span>Announcements: <span className="font-bold text-orange-600">{importPreview.filter(i => i.canvas_type === 'announcement').length}</span></span>
       </div>
       <div className="flex flex-wrap gap-4">
         {courseSummary.map(([course, count]) => (

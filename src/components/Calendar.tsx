@@ -34,12 +34,12 @@ const STATUS_CONFIG = {
   ambiguous: { label: 'Ambiguous', color: '#A78BFA', icon: HelpCircle },
 };
 
-export const Calendar = ({ 
-  events, 
-  onEventClick, 
+export const Calendar = ({
+  events,
+  onEventClick,
   onDateSelect,
   onEventDrop,
-  onEventResize 
+  onEventResize
 }: CalendarProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<ViewType>('timeGridWeek');
@@ -158,9 +158,12 @@ export const Calendar = ({
     } else if (canvasType === 'quiz') {
       typeIcon = <ClipboardList className="w-4 h-4 text-pink-500 mr-1" />;
       typeBadge = <span className="ml-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-200">Quiz</span>;
-    } else if (canvasType === 'announcement') {
+    } else if (canvasType === 'discussion_topic') {
       typeIcon = <Megaphone className="w-4 h-4 text-purple-500 mr-1" />;
-      typeBadge = <span className="ml-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200">Announcement</span>;
+      typeBadge = <span className="ml-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200">Discussion Topic</span>;
+    } else if (canvasType === 'announcement') {
+      typeIcon = <Megaphone className="w-4 h-4 text-orange-500 mr-1" />;
+      typeBadge = <span className="ml-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-200">Announcement</span>;
     } else if (type === 'QUIZ') {
       typeIcon = <ClipboardList className="w-4 h-4 text-pink-500 mr-1" />;
       typeBadge = <span className="ml-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-200">Quiz</span>;
@@ -236,10 +239,10 @@ export const Calendar = ({
           </h2>
           <Button variant="ghost" size="icon" onClick={handleNext} aria-label="Next">
             <ChevronRight className="w-5 h-5" />
-            </Button>
+          </Button>
           <Button variant="outline" size="sm" onClick={handleToday}>
-              Today
-            </Button>
+            Today
+          </Button>
         </div>
 
         <div className="flex items-center space-x-2">
@@ -259,8 +262,8 @@ export const Calendar = ({
           >
             Month
           </Button>
-          <Button 
-            onClick={() => onDateSelect(new Date())} 
+          <Button
+            onClick={() => onDateSelect(new Date())}
             className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -332,7 +335,7 @@ export const Calendar = ({
               }}
               eventContent={renderEventContent}
             />
-            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
