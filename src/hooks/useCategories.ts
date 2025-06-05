@@ -1,12 +1,10 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { EventCategory } from '@/types';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 export const useCategories = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   const {
     data: categories = [],
@@ -51,17 +49,10 @@ export const useCategories = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
-      toast({
-        title: "Success",
-        description: "Category created successfully!",
-      });
+      toast("Category created successfully!");
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create category",
-        variant: "destructive",
-      });
+      toast(error.message || "Failed to create category");
     },
   });
 
@@ -82,17 +73,10 @@ export const useCategories = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
-      toast({
-        title: "Success",
-        description: "Category updated successfully!",
-      });
+      toast("Category updated successfully!");
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update category",
-        variant: "destructive",
-      });
+      toast(error.message || "Failed to update category");
     },
   });
 
@@ -108,17 +92,10 @@ export const useCategories = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       queryClient.invalidateQueries({ queryKey: ['events'] });
-      toast({
-        title: "Success",
-        description: "Category deleted successfully!",
-      });
+      toast("Category deleted successfully!");
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete category",
-        variant: "destructive",
-      });
+      toast(error.message || "Failed to delete category");
     },
   });
 

@@ -1,3 +1,5 @@
+// This file is obsolete. Sonner's <Toaster /> is now used for toast notifications.
+
 import { useToast } from "@/hooks/use-toast"
 import {
   Toast,

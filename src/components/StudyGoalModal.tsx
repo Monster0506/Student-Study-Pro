@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -12,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Course } from '@/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 interface StudyGoalModalProps {
   isOpen: boolean;
@@ -21,7 +20,6 @@ interface StudyGoalModalProps {
 }
 
 export const StudyGoalModal = ({ isOpen, onClose, course }: StudyGoalModalProps) => {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [targetHours, setTargetHours] = useState('');
 
@@ -88,18 +86,11 @@ export const StudyGoalModal = ({ isOpen, onClose, course }: StudyGoalModalProps)
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['study-goal'] });
       queryClient.invalidateQueries({ queryKey: ['analytics'] });
-      toast({
-        title: "Success",
-        description: "Study goal saved successfully!",
-      });
+      toast("Study goal created successfully!");
       onClose();
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save study goal",
-        variant: "destructive",
-      });
+      toast(error.message || "Failed to create study goal");
     },
   });
 
@@ -117,18 +108,11 @@ export const StudyGoalModal = ({ isOpen, onClose, course }: StudyGoalModalProps)
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['study-goal'] });
       queryClient.invalidateQueries({ queryKey: ['analytics'] });
-      toast({
-        title: "Success",
-        description: "Study goal removed successfully!",
-      });
+      toast("Study goal deleted successfully!");
       onClose();
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to remove study goal",
-        variant: "destructive",
-      });
+      toast(error.message || "Failed to delete study goal");
     },
   });
 

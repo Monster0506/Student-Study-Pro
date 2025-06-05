@@ -1,3 +1,1 @@
-import { useToast, toast } from "@/hooks/use-toast";
-
-export { useToast, toast };
+// This file is obsolete. Use 'toast' from '@/hooks/use-toast' (Sonner) instead.

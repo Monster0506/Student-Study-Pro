@@ -1,11 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Task } from '@/types';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 export const useTasks = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   const {
     data: tasks = [],
@@ -67,17 +66,10 @@ export const useTasks = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      toast({
-        title: "Success",
-        description: "Task created successfully!",
-      });
+      toast("Task created successfully!");
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create task",
-        variant: "destructive",
-      });
+      toast(error.message || "Failed to create task");
     },
   });
 

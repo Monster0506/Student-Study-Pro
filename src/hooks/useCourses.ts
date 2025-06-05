@@ -1,11 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Course } from '@/types';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 export const useCourses = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   const {
     data: courses = [],
@@ -55,17 +54,10 @@ export const useCourses = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
-      toast({
-        title: "Success",
-        description: "Course created successfully!",
-      });
+      toast("Course created successfully!");
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create course",
-        variant: "destructive",
-      });
+      toast(error.message || "Failed to create course");
     },
   });
 
@@ -89,17 +81,10 @@ export const useCourses = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
-      toast({
-        title: "Success",
-        description: "Course updated successfully!",
-      });
+      toast("Course updated successfully!");
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update course",
-        variant: "destructive",
-      });
+      toast(error.message || "Failed to update course");
     },
   });
 
@@ -116,17 +101,10 @@ export const useCourses = () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      toast({
-        title: "Success",
-        description: "Course deleted successfully!",
-      });
+      toast("Course deleted successfully!");
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete course",
-        variant: "destructive",
-      });
+      toast(error.message || "Failed to delete course");
     },
   });
 
