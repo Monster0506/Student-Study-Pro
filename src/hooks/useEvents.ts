@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Event, EventType, ReminderSetting } from '@/types';
 import { PostgrestError } from '@supabase/supabase-js';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface DatabaseEvent {
   id: string;
@@ -42,7 +42,6 @@ const transformDatabaseEvent = (dbEvent: DatabaseEvent): Event => ({
 
 export const useEvents = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   const { data: events = [], isLoading, error } = useQuery<Event[], PostgrestError>({
     queryKey: ['events'],
@@ -94,17 +93,14 @@ export const useEvents = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
-      toast({
-        title: "Success",
-        description: "Event created successfully!",
-      });
+      toast.success("Event created successfully!", {
+        description: "Your new event has been added to the calander.",
+      })
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create event",
-        variant: "destructive",
-      });
+      toast.error("Failed to create event", {
+        description: error.message || "An error occured while creating the event.",
+      })
     },
   });
 
@@ -139,17 +135,14 @@ export const useEvents = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
-      toast({
-        title: "Success",
-        description: "Event updated successfully!",
-      });
+      toast.success("Event updated successfully!", {
+        description: "Your changes have been saved.",
+      })
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update event",
-        variant: "destructive",
-      });
+      toast.error("Failed to update event", {
+        description: error.message || "An error occured while updating the event.",
+      })
     },
   });
 
@@ -168,17 +161,14 @@ export const useEvents = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
-      toast({
-        title: "Success",
-        description: "Event deleted successfully!",
-      });
+      toast.success("Event deleted successfully!", {
+        description: "The event has been removed from your calander.",
+      })
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete event",
-        variant: "destructive",
-      });
+      toast.error("Failed to delete event", {
+        description: error.message || "An error occurred while deleting the event.",
+      })
     },
   });
 
