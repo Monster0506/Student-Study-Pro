@@ -21,7 +21,7 @@ interface CalendarProps {
   onEventResize?: (event: Event, newStart: Date, newEnd: Date) => void;
 }
 
-type ViewType = 'timeGridWeek' | 'dayGridMonth';
+type ViewType = 'timeGridDay' | 'timeGridWeek' | 'dayGridMonth';
 
 // Status config for tasks
 const STATUS_CONFIG = {
@@ -41,11 +41,11 @@ export const Calendar = ({
   onEventDrop,
   onEventResize
 }: CalendarProps) => {
+  const isMobile = useIsMobile();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [view, setView] = useState<ViewType>('timeGridWeek');
+  const [view, setView] = useState<ViewType>(isMobile ? 'timeGridDay' : 'timeGridWeek');
   const calendarRef = useRef<any>(null);
   const { categories } = useCategories();
-  const isMobile = useIsMobile();
   const { courses } = useCourses();
 
   const getEventColor = (event: Event) => {
@@ -92,6 +92,8 @@ export const Calendar = ({
   };
 
   const handleViewChange = (newView: ViewType) => {
+    // Prevent switching to month view on mobile
+    if (isMobile && newView === 'dayGridMonth') return;
     setView(newView);
     if (calendarRef.current) {
       calendarRef.current.getApi().changeView(newView);
@@ -246,22 +248,46 @@ export const Calendar = ({
         </div>
 
         <div className="flex items-center space-x-2">
-          <Button
-            variant={view === 'timeGridWeek' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handleViewChange('timeGridWeek')}
-            className="flex-1 sm:flex-none"
-          >
-            Week
-          </Button>
-          <Button
-            variant={view === 'dayGridMonth' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handleViewChange('dayGridMonth')}
-            className="flex-1 sm:flex-none"
-          >
-            Month
-          </Button>
+          {/* Show Day and Week on mobile, Week and Month on desktop */}
+          {isMobile ? (
+            <>
+              <Button
+                variant={view === 'timeGridDay' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleViewChange('timeGridDay')}
+                className="flex-1 sm:flex-none"
+              >
+                Day
+              </Button>
+              <Button
+                variant={view === 'timeGridWeek' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleViewChange('timeGridWeek')}
+                className="flex-1 sm:flex-none"
+              >
+                Week
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant={view === 'timeGridWeek' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleViewChange('timeGridWeek')}
+                className="flex-1 sm:flex-none"
+              >
+                Week
+              </Button>
+              <Button
+                variant={view === 'dayGridMonth' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleViewChange('dayGridMonth')}
+                className="flex-1 sm:flex-none"
+              >
+                Month
+              </Button>
+            </>
+          )}
           <Button
             onClick={() => onDateSelect(new Date())}
             className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
@@ -279,7 +305,7 @@ export const Calendar = ({
             <FullCalendar
               ref={calendarRef}
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-              initialView={view}
+              initialView={isMobile ? 'timeGridDay' : 'timeGridWeek'}
               headerToolbar={false}
               height="auto"
               events={events.map(event => {
@@ -322,9 +348,12 @@ export const Calendar = ({
               expandRows={true}
               stickyHeaderDates={true}
               dayMaxEvents={isMobile ? 2 : 3}
-
               eventMaxStack={2}
               views={{
+                timeGridDay: {
+                  titleFormat: { month: 'long', year: 'numeric', day: 'numeric' },
+                  slotLabelFormat: { hour: 'numeric', minute: '2-digit', hour12: true }
+                },
                 timeGridWeek: {
                   titleFormat: { month: 'long', year: 'numeric' },
                   slotLabelFormat: { hour: 'numeric', minute: '2-digit', hour12: true }
