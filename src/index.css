@@ -286,3 +286,102 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* === FullCalendar List & Custom View Styling === */
+.fc-custom-theme .fc-list, .fc-custom-theme .fc-list-table {
+  background: var(--background);
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.06);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.fc-custom-theme .fc-list-table th, .fc-custom-theme .fc-list-table td {
+  padding: 0.75rem 1.25rem;
+  font-size: 0.98em;
+}
+.fc-custom-theme .fc-list-event {
+  border-radius: 0.5rem;
+  margin: 0.25rem 0;
+  background: var(--muted);
+  color: var(--foreground);
+  transition: background 0.2s;
+  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.04);
+}
+.fc-custom-theme .fc-list-event:hover {
+  background: var(--accent);
+}
+.fc-custom-theme .fc-list-event-dot {
+  border-radius: 50%;
+  width: 10px;
+  height: 10px;
+  margin-right: 8px;
+}
+.fc-custom-theme .fc-list-table th {
+  background: var(--card);
+  color: var(--card-foreground);
+  font-weight: 600;
+  font-size: 1em;
+  border-bottom: 1px solid var(--border);
+}
+.fc-custom-theme .fc-list-table td {
+  background: transparent;
+}
+.fc-custom-theme .fc-list-empty {
+  color: var(--muted-foreground);
+  padding: 1.5rem;
+  text-align: center;
+}
+.fc-custom-theme .fc-list-day {
+  background: var(--popover);
+  color: var(--popover-foreground);
+  font-weight: 600;
+  font-size: 1.05em;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Custom 3-day view header and grid tweaks */
+.fc-custom-theme .fc-timegrid {
+  border-radius: 0.75rem;
+  background: var(--background);
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.06);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.fc-custom-theme .fc-col-header-cell {
+  background: var(--card);
+  color: var(--card-foreground);
+  font-weight: 600;
+  font-size: 1em;
+  border-bottom: 1px solid var(--border);
+}
+.fc-custom-theme .fc-timegrid-slot-label, .fc-custom-theme .fc-timegrid-axis-cushion {
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-size: 0.98em;
+}
+.fc-custom-theme .fc-timegrid-slot {
+  background: transparent;
+  border-color: var(--border);
+}
+
+/* Ensure dark mode support via Tailwind's .dark class */
+.dark .fc-custom-theme .fc-list, .dark .fc-custom-theme .fc-list-table, .dark .fc-custom-theme .fc-timegrid {
+  background: var(--background);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+}
+.dark .fc-custom-theme .fc-list-table th, .dark .fc-custom-theme .fc-col-header-cell {
+  background: var(--card);
+  color: var(--card-foreground);
+}
+.dark .fc-custom-theme .fc-list-event {
+  background: var(--muted);
+  color: var(--foreground);
+}
+.dark .fc-custom-theme .fc-list-event:hover {
+  background: var(--accent);
+}
+.dark .fc-custom-theme .fc-list-day {
+  background: var(--popover);
+  color: var(--popover-foreground);
+}

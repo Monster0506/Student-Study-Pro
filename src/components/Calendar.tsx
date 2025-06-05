@@ -22,7 +22,7 @@ interface CalendarProps {
   onEventResize?: (event: Event, newStart: Date, newEnd: Date) => void;
 }
 
-type ViewType = 'timeGridDay' | 'timeGridWeek' | 'dayGridMonth';
+type ViewType = 'timeGridDay' | 'timeGridWeek' | 'dayGridMonth' | 'listDay' | 'listWeek' | 'listMonth' | 'listYear' | 'threeDay';
 
 // Status config for tasks
 const STATUS_CONFIG = {
@@ -230,7 +230,7 @@ export const Calendar = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 fc-custom-theme">
       {/* Calendar Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center space-x-2">
@@ -246,6 +246,25 @@ export const Calendar = ({
           <Button variant="outline" size="sm" onClick={handleToday}>
               Today
             </Button>
+          {/* Improved dropdown for all view types (for testing) */}
+          <label htmlFor="calendar-view-select" className="ml-2 text-xs font-medium text-gray-700 dark:text-gray-300">View:</label>
+          <select
+            id="calendar-view-select"
+            value={view}
+            onChange={e => handleViewChange(e.target.value as ViewType)}
+            className="ml-1 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors shadow-sm hover:border-blue-400 dark:hover:border-blue-400"
+            style={{ minWidth: 120 }}
+            aria-label="Change calendar view (testing)"
+          >
+            <option value="timeGridDay">Day (timeGridDay)</option>
+            <option value="timeGridWeek">Week (timeGridWeek)</option>
+            <option value="threeDay">3 Day (Custom)</option>
+            <option value="dayGridMonth">Month (dayGridMonth)</option>
+            <option value="listDay">List Day</option>
+            <option value="listWeek">List Week</option>
+            <option value="listMonth">List Month</option>
+            <option value="listYear">List Year</option>
+          </select>
         </div>
 
         <div className="flex items-center space-x-2">
@@ -287,22 +306,6 @@ export const Calendar = ({
           >
             Month
           </Button>
-              {/* Subtle dropdown for all view types (desktop only, for testing) */}
-              <select
-                value={view}
-                onChange={e => handleViewChange(e.target.value as ViewType)}
-                style={{ opacity: 0.5, fontSize: '0.9em', padding: '2px 6px', borderRadius: 4, border: '1px solid #ccc', background: 'transparent', marginLeft: 8 }}
-                className="hidden md:inline-block"
-                aria-label="Test all calendar views"
-              >
-                <option value="dayGridMonth">Month (dayGridMonth)</option>
-                <option value="timeGridWeek">Week (timeGridWeek)</option>
-                <option value="timeGridDay">Day (timeGridDay)</option>
-                <option value="listWeek">List Week (listWeek)</option>
-                <option value="listDay">List Day (listDay)</option>
-                <option value="dayGridWeek">Month-Week (dayGridWeek)</option>
-                <option value="dayGridDay">Month-Day (dayGridDay)</option>
-              </select>
             </>
           )}
           <Button 
@@ -375,11 +378,23 @@ export const Calendar = ({
                   titleFormat: { month: 'long', year: 'numeric' },
                   slotLabelFormat: { hour: 'numeric', minute: '2-digit', hour12: true }
                 },
+                threeDay: {
+                  type: 'timeGrid',
+                  duration: { days: 3 },
+                  buttonText: '3 Day',
+                  titleFormat: { month: 'long', year: 'numeric', day: 'numeric' },
+                  slotLabelFormat: { hour: 'numeric', minute: '2-digit', hour12: true }
+                },
                 dayGridMonth: {
                   titleFormat: { month: 'long', year: 'numeric' }
-                }
+                },
+                listDay: { buttonText: 'List Day' },
+                listWeek: { buttonText: 'List Week' },
+                listMonth: { buttonText: 'List Month' },
+                listYear: { buttonText: 'List Year' },
               }}
               eventContent={renderEventContent}
+              contentHeight="auto"
             />
             </div>
         </CardContent>
@@ -387,3 +402,58 @@ export const Calendar = ({
     </div>
   );
 };
+
+<style>
+{`
+  .fc-custom-theme .fc-list, .fc-custom-theme .fc-list-table {
+    background: var(--fc-bg, #fff);
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.06);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+  }
+  .dark .fc-custom-theme .fc-list, .dark .fc-custom-theme .fc-list-table {
+    background: #18181b;
+    border: 1px solid #27272a;
+    color: #e5e7eb;
+  }
+  .fc-custom-theme .fc-list-event {
+    border-radius: 0.5rem;
+    margin: 0.25rem 0;
+    background: #f9fafb;
+    color: #111827;
+    transition: background 0.2s;
+  }
+  .dark .fc-custom-theme .fc-list-event {
+    background: #232336;
+    color: #e5e7eb;
+  }
+  .fc-custom-theme .fc-list-event:hover {
+    background: #e0e7ef;
+  }
+  .dark .fc-custom-theme .fc-list-event:hover {
+    background: #2d2d40;
+  }
+  .fc-custom-theme .fc-list-event-dot {
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+    margin-right: 8px;
+  }
+  .fc-custom-theme .fc-list-table th, .fc-custom-theme .fc-list-table td {
+    padding: 0.5rem 1rem;
+  }
+  /* Custom view tweaks */
+  .fc-custom-theme .fc-timegrid {
+    border-radius: 0.75rem;
+    background: var(--fc-bg, #fff);
+    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.06);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+  }
+  .dark .fc-custom-theme .fc-timegrid {
+    background: #18181b;
+    border: 1px solid #27272a;
+  }
+`}
+</style>
