@@ -9,6 +9,7 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import listPlugin from '@fullcalendar/list';
 import { format } from 'date-fns';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { useCourses } from '@/hooks/useCourses';
@@ -241,10 +242,10 @@ export const Calendar = ({
           </h2>
           <Button variant="ghost" size="icon" onClick={handleNext} aria-label="Next">
             <ChevronRight className="w-5 h-5" />
-          </Button>
+            </Button>
           <Button variant="outline" size="sm" onClick={handleToday}>
-            Today
-          </Button>
+              Today
+            </Button>
         </div>
 
         <div className="flex items-center space-x-2">
@@ -270,26 +271,42 @@ export const Calendar = ({
             </>
           ) : (
             <>
-              <Button
+          <Button
                 variant={view === 'timeGridWeek' ? 'default' : 'outline'}
-                size="sm"
+            size="sm"
                 onClick={() => handleViewChange('timeGridWeek')}
                 className="flex-1 sm:flex-none"
-              >
-                Week
-              </Button>
-              <Button
+          >
+            Week
+          </Button>
+          <Button
                 variant={view === 'dayGridMonth' ? 'default' : 'outline'}
-                size="sm"
+            size="sm"
                 onClick={() => handleViewChange('dayGridMonth')}
                 className="flex-1 sm:flex-none"
+          >
+            Month
+          </Button>
+              {/* Subtle dropdown for all view types (desktop only, for testing) */}
+              <select
+                value={view}
+                onChange={e => handleViewChange(e.target.value as ViewType)}
+                style={{ opacity: 0.5, fontSize: '0.9em', padding: '2px 6px', borderRadius: 4, border: '1px solid #ccc', background: 'transparent', marginLeft: 8 }}
+                className="hidden md:inline-block"
+                aria-label="Test all calendar views"
               >
-                Month
-              </Button>
+                <option value="dayGridMonth">Month (dayGridMonth)</option>
+                <option value="timeGridWeek">Week (timeGridWeek)</option>
+                <option value="timeGridDay">Day (timeGridDay)</option>
+                <option value="listWeek">List Week (listWeek)</option>
+                <option value="listDay">List Day (listDay)</option>
+                <option value="dayGridWeek">Month-Week (dayGridWeek)</option>
+                <option value="dayGridDay">Month-Day (dayGridDay)</option>
+              </select>
             </>
           )}
-          <Button
-            onClick={() => onDateSelect(new Date())}
+          <Button 
+            onClick={() => onDateSelect(new Date())} 
             className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -304,7 +321,7 @@ export const Calendar = ({
           <div className="fc-theme-standard">
             <FullCalendar
               ref={calendarRef}
-              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
               initialView={isMobile ? 'timeGridDay' : 'timeGridWeek'}
               headerToolbar={false}
               height="auto"
@@ -364,7 +381,7 @@ export const Calendar = ({
               }}
               eventContent={renderEventContent}
             />
-          </div>
+            </div>
         </CardContent>
       </Card>
     </div>
